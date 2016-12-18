@@ -1,0 +1,69 @@
+{
+	"Games":{
+		"perod":{
+			"Players" :{				
+					"PlayerSlots":{
+						"Player1": false,
+						"Player2": false,
+						"Player3" : false				
+					},
+					"PlayerInfo":{
+						"Player1":{
+							"Name" : "",
+							"uid" : "",
+							"points" : 0
+						},
+							"Player2":{
+							"Name" : "",
+							"uid" : "",
+							"points" : 0
+						},"Player3":{
+							"Name" : "",
+							"uid" : "",
+							"points" : 0
+						}			
+				}
+			},	
+
+			"Timers" : {
+				"Answer" : {
+					"Active" : false,
+					"User" : false
+				},
+				"Game" : {
+					"Started" : false,
+					"Pause" : false
+				},
+				"Question" : {
+					"Active" : false,
+					"Pause" : false
+				}
+
+			},
+
+			"Game":{
+				"Started": "false",
+				"HotSeat" : "false",
+				"TempSeat" : "false"
+			},
+
+
+			"Category": {
+				"1":{
+					"Name": "Hots",
+					"100": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": "false"
+					},
+					"200" : {
+						"Clue" : "who is worst hero",
+						"Answer" : "dablow",
+						"done" : "false"
+					}
+				}
+
+			}
+		}
+	}
+}

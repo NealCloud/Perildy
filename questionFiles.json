@@ -61,6 +61,19 @@
 						"Answer" : "dablow",
 						"done" : "false"
 					}
+				},
+					"2":{
+					"Name": "Bots",
+					"100": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": "false"
+					},
+					"200" : {
+						"Clue" : "who is worst hero",
+						"Answer" : "dablow",
+						"done" : "false"
+					}
 				}
 
 			}

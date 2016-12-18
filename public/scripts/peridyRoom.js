@@ -6,6 +6,10 @@ const Perildy = (self) =>{
 			signInBtn : $("#signIn"),
 			signOutBtn : $("#signOut"),			
 			joinGameBtn : $("#joinGame"),
+			startGameBtn: $("#startGame"),
+			buzzerBtn: $("#buzzer"),
+			answerBtn: $('#answerBtn'),
+			answerInput: $("#answerInput"),
 			playerSlots : $("#playerSlots"),
 			player1div : $("#player1"),
 			player2div : $("#player2"),
@@ -19,7 +23,7 @@ const Perildy = (self) =>{
 			gameStarted: false,
 			currentHost: false,
 			
-			refList : ["Players", "Timers", "Category"],
+			refList : ["Players", "Timers", "Category", "Game"],
 			
 			init: (self) => {
 				state.self = self;	
@@ -42,6 +46,18 @@ const Perildy = (self) =>{
 		state.joinGameBtn.on("click", function(e){
 				state.self.joinGame();
 		})
+		
+		state.startGameBtn.on("click", function(e){
+				state.self.startGame();
+		})
+		
+		state.buzzerBtn.on("click", function(e){
+				state.self.buzzGame();
+		})
+		
+		state.answerBtn.on("click", function(e){
+				state.self.answerQuestion();
+		})
 
 		return Object.assign(
 			
@@ -57,9 +73,13 @@ const Perildy = (self) =>{
 			onSignOut(state),
 			loadGame(state),
 			joinGame(state),
+			startGame(state),
 			updatePlayerInfo(state),
 			renderPlayerInfo(state),
-			
+			updateGameBoard(state),
+			buzzGame(state),
+			answerQuestion(state),
+			checkGameInput(state),
 			
 			bugo(state)
 		)
@@ -94,10 +114,46 @@ const loadGame = (state) => ({
 			
 		})
 		
-		state.joinGameBtn.show();
-		console.log("loading game");
+		state.joinGameBtn.show();		
 		state.self.updatePlayerInfo();
+		state.self.updateGameBoard();
 	}
+})
+
+const updateGameBoard = (state) => ({
+	updateGameBoard : ()=> {
+		state.CategoryRef.on("value", function(data){
+			var cats = data.val();
+			var len = cats.length;		
+			
+			for(var i = 1; i < len; i++ ){			
+				
+				var title = $("<div>", {
+					text: cats[i].Name,
+					class: "cluetitle"
+				})
+				
+				var q1 = $("<div>",{
+					text: cats[i]["100"].Clue,
+					class: "clues"
+				})
+					var q2 = $("<div>",{
+					text: cats[i]["200"].Clue,
+					class: "clues"
+				})
+				
+				$("#gameBoard").append(title, q1, q2);
+				
+				
+			}
+			
+			$("#gameBoard").on("click", ".clues", function(){
+					 console.log(this);
+				})
+			
+		});
+	}																						 
+	
 })
 
 const updatePlayerInfo = (state) => ({
@@ -142,6 +198,54 @@ const joinGame = (state) => ({
 			
 	}
 })
+
+const startGame = (state) => ({
+	startGame : () => {
+			if(state.self.checkGameInput(state.GameRef.child("Started"))){
+				console.log("game has laready started");
+			}
+		else{
+			console.log("starting game");
+		}
+			
+			
+	}
+})
+
+const buzzGame = (state) => ({
+	buzzGame : () => {
+		 
+		if(!state.notRendered){
+			
+			console.log("buzzz" );
+		}
+			
+	}
+})
+
+const answerQuestion = (state) => ({
+	answerQuestion : () => {
+		 
+		if(!state.notRendered){
+			
+			state.self.checkGameInput(state.GameRef.child("HotSeat"))
+		}
+			
+	}
+})
+
+const checkGameInput = (state) => ({
+	checkGameInput : (ref, child) => {
+		 
+		ref.once("value", function(snap){
+			var input = snap.val();
+			return input;
+		})
+			
+	}
+})
+
+
 
 
 const bugo = (state) => ({

@@ -4,6 +4,10 @@
     <meta charset="utf-8">
     <title>Welcome to Firebase Hosting</title>
     <style media="screen">
+			*{
+				box-sizing: border-box;
+			}
+			
       body {
         font-family: Roboto, Arial, sans-serif;
         background: #ECEFF1;
@@ -15,8 +19,9 @@
       }
 
       #message {
-        max-width: 400px;
-        margin: 40px auto;
+        max-width: 900px;
+				height: 600px;
+        position: relative;
         box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2),0 1px 1px 0 rgba(0,0,0,0.14),0 2px 1px -1px rgba(0,0,0,0.12);
         border-radius: 2px;
         background: white;
@@ -35,14 +40,15 @@
         line-height: 150%;
       }
 
-      #message ul {
+      #playerSlots ul {
         list-style: none;
         margin: 16px 0 0;
         padding: 0;
         text-align: center;
+				width: 100%;
       }
 
-      #message li{
+      #playerSlots li{
         display: inline-block;
         padding: 8px;
         text-transform: uppercase;
@@ -58,20 +64,42 @@
 			
 				#gameBoard{
 				display: flex;
-				flex-direction: column
+				flex-flow: column wrap;
+					justify-content: flex-start;
+					position: absolute;
+					top: 0;
+					left: 0;
+					width: 100%;
+					height: 500px;
+					
+			}
+			#playerSlots{
+				position: absolute;
+				top: 500px;
+				left: 0px;
 			}
 			
 			.clues{
-				height: 33%;
-				width: 33%;
+				height: 100px;
+				width: 100px;
+				color: yellow;
 				border: 1px solid black;
 			}
 			.cluetitle{
-				height: 33%;
-				width: 33%;
+				height: 100px;
+				width: 100px;
 				border: 2px solid black;
 			}
 			#timerBox{
+				position: relative;
+				display: inline-block;
+				border: 2px solid black;
+				width: 50px;
+				height: 50px;
+			}
+			#timerBox2{
+				position: relative;
+				display: inline-block;
 				border: 2px solid black;
 				width: 50px;
 				height: 50px;
@@ -80,7 +108,14 @@
 				background-color: red;
 			}
 			.unpicked {
-				background-color: blue;
+				background-color: rgb(3,155,229);;
+			}
+			.hotseat{
+				border: 3px solid yellow;
+			}
+			
+			.tempseat{
+				border: 2px solid red;
 			}
     </style>
   </head>
@@ -91,14 +126,18 @@
       <div id="gameBoard">
 				
 			</div>
-			<div id="timerBox">
-			</div>
+			
       <ul id="playerSlots">
+				
         <li id='player1'>Player 1</li>
 				<li id='player2'>Player 2</li>
 				<li id='player3'>Player 3</li>
       </ul>
     </div>
+		<div id="timerBox">
+			</div>
+			<div id="timerBox2">
+			</div>
 		<button id="signIn">
 			Sing In!
 		</button>
@@ -118,6 +157,9 @@
 		</input>
 	<button id="answerBtn">
 			answer Question
+		</button>
+	<button id="resetBtn">
+			reset 
 		</button>
 		<script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 <script>

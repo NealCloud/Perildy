@@ -8,15 +8,16 @@ const Perildy = (self) =>{
 			joinGameBtn : $("#joinGame"),
 			startGameBtn: $("#startGame"),
 			timerBox: $("#timerBox"),
+			timerBox2: $('#timerBox2'),
 			buzzerBtn: $("#buzzer"),
 			answerBtn: $('#answerBtn'),
 			answerInput: $("#answerInput"),
 			playerSlots : $("#playerSlots"),
-			player1div : $("#player1"),
-			player2div : $("#player2"),
-			player3div : $("#player3"),
+			Player1div : $("#player1"),
+			Player2div : $("#player2"),
+			Player3div : $("#player3"),
 			gameBoard : $("#gameBoard"),
-			
+			resetBtn : $("#resetBtn"),
 			//client info vars
 			gameName : window.location.hash.substr(1),
 			refList : ["Players", "Timers", "Category", "Game"],
@@ -82,6 +83,10 @@ const Perildy = (self) =>{
 		state.answerBtn.on("click", function(e){
 				state.self.answerQuestion();
 		})
+		
+		state.resetBtn.on("click", function(e){
+			state.self.resetBtn();
+		})
 		//return the final object with all methods composted
 		return Object.assign(
 			
@@ -108,6 +113,9 @@ const Perildy = (self) =>{
 			updateGameInfo(state),
 			pickQuestion(state),
 			updateTimer(state),
+			endQuestionPhase(state),
+			resetBtn(state),
+			endAnswerTimer(state),
 			//utility methods
 			bugo(state)
 		)
@@ -142,8 +150,7 @@ const onSignIn = (state) => ({
 });
 //load game should only happen once
 const loadGame = (state) => ({
-	loadGame : () => {		
-		
+	loadGame : () => {	
 		state.joinGameBtn.show();		
 		state.self.updatePlayerInfo();
 		state.self.createGameBoard();
@@ -151,51 +158,8 @@ const loadGame = (state) => ({
 		state.self.updateTimer();
 	}
 })
-//should listen for Server Game info Changes
-const updateGameInfo = (state) => ({
-	updateGameInfo : ()=> {
-		state.GameRef.on("value", function(snap){
-			var serverInfo = snap.val();
-			
-			state.gameInfo.gameStarted = serverInfo.Started;
-			state.gameInfo.gamePickPhase = serverInfo.PickPhase;
-			state.gameInfo.hotSeat = serverInfo.HotSeat;
-			state.gameInfo.tempSeat = serverInfo.TempSeat;
-			state.gameInfo.questionPhase = serverInfo.QuestionPhase;
-			
-			
-			if(state.playerSlot){
-				state.self.setDisconnect(state.playerSlot);
-			}
-			
-			console.log(state.gameInfo);
-		})	
-	}	
-})
 
-const updateTimer = (state) => ({
-	updateTimer : ()=> {
-		state.TimersRef.on("child_changed", function(snap){
-			var serverInfo = snap.val();
-			var key = snap.key;
-			switch(key){
-				case "Question":
-					state.timerBox.text(serverInfo.Time);
-					if(serverInfo.Time <= 0){
-						state.notAnswered = true;
-						
-					}
-			}
-			
-			
-			
-			
-		
-		})	
-	}	
-})
-
-//should listen for Server Board Changes and update board
+//creates the board
 const createGameBoard = (state) => ({
 	createGameBoard : ()=> {
 		state.CategoryRef.on("value", function(data){
@@ -227,7 +191,7 @@ const createGameBoard = (state) => ({
 			//set the question amount
 			state.gameInfo.questionsLeft = $(".unpicked").length;
 		
-			
+			//set click event for categories
 			state.gameBoard.on("click", ".clues", function(e){
 				 
 					 //console.log($(this).hasClass("clues"));				   
@@ -235,11 +199,11 @@ const createGameBoard = (state) => ({
 					 var row = board.attr('datarow');
 				   var col = board.attr('datacol');
 				 //TODO: has unpicked class
-					 if(state.gameInfo.gamePickPhase && state.playerSlot && state.userId == state.gameInfo.hotSeat){
+					 if(state.gameInfo.gamePickPhase && state.playerSlot && state.playerSlot == state.gameInfo.hotSeat){
 						 //start Question Timer
 						 //trigger Answer Phase
 						 //end pick Phase
-						 
+						 state.gameInfo.questionsLeft -= 1;
 						 state.GameRef.update({PickPhase: false});
 						 state.self.pickQuestion(row, col);
 						 board.addClass("picked");
@@ -248,7 +212,7 @@ const createGameBoard = (state) => ({
 					 else if(!state.playerSlot){
 						 console.log("please join the game");
 					 }
-					else if(state.userId !== state.gameInfo.hotSeat){
+					else if(state.playerSlot !== state.gameInfo.hotSeat){
 						console.log("you are not in hotseat");
 					}
 				
@@ -259,6 +223,76 @@ const createGameBoard = (state) => ({
 	
 })
 
+//listen for Server Game info Changes
+const updateGameInfo = (state) => ({
+	updateGameInfo : ()=> {
+		state.GameRef.on("value", function(snap){
+			var serverInfo = snap.val();
+			
+			state.gameInfo.gameStarted = serverInfo.Started;
+			state.gameInfo.gamePickPhase = serverInfo.PickPhase;
+			state.gameInfo.hotSeat = serverInfo.HotSeat;
+			state.gameInfo.tempSeat = serverInfo.TempSeat;
+			state.gameInfo.questionPhase = serverInfo.QuestionPhase;			
+			
+			if(state.playerSlot){
+				state.self.setDisconnect(state.playerSlot);
+			}			
+			 
+			if(state.gameInfo.hotSeat){
+				$("#playerSlots > li").removeClass("hotseat");
+				state[state.gameInfo.hotSeat + "div"].addClass("hotseat");
+			}
+
+			console.log(state.gameInfo);
+		})	
+	}	
+})
+
+//listen for Timer Changes
+const updateTimer = (state) => ({
+	updateTimer : ()=> {
+		state.TimersRef.on("child_changed", function(snap){
+			var serverInfo = snap.val();
+			var key = snap.key;
+			
+			switch(key){
+					//if Question ticks mark on timer text
+					//if timer done trigger end Phase
+				case "Question":
+					state.timerBox.text(serverInfo.Time);
+					if(serverInfo.Time <= 0 && serverInfo.Started && state.gameInfo.questionPhase){
+						console.log("question timer end triggered");						
+						state.self.endQuestionPhase();				
+					}
+					break;
+					//if Answer ticks mark on timer2 text
+					//if final tick remove temp seat reference and turn off
+				case "Answer":
+					state.timerBox2.text(serverInfo.Time);
+					if(serverInfo.Time <= 0 && serverInfo.Started && state.gameInfo.questionPhase){
+						state.self.endAnswerTimer();
+					}
+					break;
+			}
+			
+		
+		})	
+	}	
+})
+
+const endAnswerTimer = (state) => ({
+	endAnswertimer: ()=>{
+		//if user is in the tempseat clear it and the timer
+		if(state.gameInfo.tempSeat == state.playerSlot){
+			clearInterval(state.answerTimer);
+			state.GameRef.update({TempSeat:false});
+			state.TimersRef.child("Answer").update({Started:false});	
+		}							
+	}
+})
+
+//
 const pickQuestion = (state) =>({
 	pickQuestion: (row, col) =>{
 		//console.log(row + " " + col);
@@ -280,32 +314,48 @@ const pickQuestion = (state) =>({
 		
 		//start Question Timer
 		state.TimersRef.child("Question").update({
+				 Time: startTime,
 				 Started: true
 			 })
 		
 		state.questionTimer = setInterval(function(){
-			console.log("timer goind");
+			
 			startTime -= 1;
 			state.TimersRef.child("Question").update({				 
 				 Time: startTime
-			 })
-			if(startTime <= 0){
-				clearInterval(state.questionTimer);
-				state.GameRef.update({
-				 QuestionPhase: false,
-				 PickPhase: true,
-					TempSeat: false
-			 })	
-				state.TimersRef.child("Question").update({				 
-				 Started: false
-			 })
-			}
+			 })			
 			
-			console.log(state.questionTimer);
 		}, 1000)
 	}
 })
 
+const endQuestionPhase = (state) => ({
+	endQuestionPhase : () => {
+		//reset ability to buzz in
+		 state.notAnswered = true;
+		
+		 if(state.playerSlot == state.gameInfo.hotSeat){
+			  clearInterval(state.questionTimer);
+			 	state.TimersRef.child("Question").update({				 
+					Started: false
+			 	})
+				state.GameRef.update({
+				 QuestionPhase: false,
+				 PickPhase: true,
+				 TempSeat: false
+			 	})	
+		 }
+		
+		//clear any other timers and temp seat
+			state.GameRef.update({TempSeat:false});
+			state.TimersRef.child("Answer").update({Started:false});
+
+			if(state.gameInfo.questionsLeft <= 0 && state.playerSlot == state.gameInfo.hotSeat){
+				 console.log("Its time for final Peridly!!");							
+			}
+					
+		}
+})
 
 //should listen for Server Player Changes and update Players
 const updatePlayerInfo = (state) => ({
@@ -331,11 +381,11 @@ const updatePlayerInfo = (state) => ({
 //renders the Player info
 const renderPlayerInfo = (state) => ({
 	renderPlayerInfo : () =>{		
-		state.player1div.text(state.playerinfo.Player1.name + 
+		state.Player1div.text(state.playerinfo.Player1.name + 
 													state.playerinfo.Player1.points);
-		state.player2div.text(state.playerinfo.Player2.name + 
+		state.Player2div.text(state.playerinfo.Player2.name + 
 													state.playerinfo.Player2.points);
-		state.player3div.text(state.playerinfo.Player3.name + 
+		state.Player3div.text(state.playerinfo.Player3.name + 
 													state.playerinfo.Player3.points);
 	}	
 })
@@ -357,7 +407,7 @@ const joinGame = (state) => ({
 			}
 			
 			if(!state.gameInfo.hotSeat){
-				state.GameRef.update({HotSeat: state.userId});
+				state.GameRef.update({HotSeat: state.playerSlot});
 			}
 		})
 		
@@ -378,18 +428,18 @@ const setPlayer = (state) => ({
 const startGame = (state) => ({
 	startGame : () => {
 		if(!state.playerSlot){
-			console.log("please join game")
+			console.log("please join game first")
 			return 
 		}		
 
 		if(state.gameInfo.gameStarted){
 			
-			console.log("game has laready started");
+			console.log("game has already started");
 		}
 		else{
 			var gameStuff = {
 				Started: true,
-				HotSeat: state.userId,
+				HotSeat: state.playerSlot,
 				PickPhase: true
 			}
 			state.GameRef.update(gameStuff);
@@ -399,54 +449,66 @@ const startGame = (state) => ({
 			
 	}
 })
-//lets a player buzz in when question is read
-//
+//lets a player buzz in when question is read if they havn't buzzed in already
+//starts answer timer and puts player in temp seat
 const buzzGame = (state) => ({
 	buzzGame : () => {
-		 
+		 //make sure they havn't buzzed and its the question Phase and temp seat open
 		if(state.notAnswered && state.gameInfo.questionPhase && !state.gameInfo.tempSeat){
+			//flag buzzed and fill temp seat
 			state.notAnswered = false;
-			state.GameRef.update({TempSeat:state.userId});
-			
-			console.log("buzzz");
+			state.GameRef.update({TempSeat:state.playerSlot});
+			//start timer to 5 seconds and set to Firebase		
+			var startTime = 5;
+			state.TimersRef.child("Answer").update({
+					 Time: startTime,
+					 Started: true						
+				 })
+			//start Interval for the Temp Seat host
+			state.answerTimer = setInterval(function(){
+				startTime -= 1;
+				state.TimersRef.child("Answer").update({				 
+					 Time: startTime
+				 })		
+			}, 1000)
 		}
+		//TODO erase after working no cheating
 		else{
 			console.log("no buzz allowed", state.gameInfo.currentAnswer, state.gameInfo.currentQuestion);
-		}
-			
+		}		
 	}
 })
-//gives answer to question
-//award points or 
+//gives attempted answer to question
+//award points and clear answer timer 
 const answerQuestion = (state) => ({
-	answerQuestion : () => {	 
-		if(state.gameInfo.questionPhase && state.gameInfo.tempSeat == state.userId){
-			
-			//correct answer
+	answerQuestion : () => {
+		//make sure they are in the temp seat and its question phase
+		if(state.gameInfo.questionPhase && state.gameInfo.tempSeat == state.playerSlot){
+			//if correct answer award points and update to player stats
 			if(state.gameInfo.currentAnswer.toLowerCase() == state.answerInput.val().toLowerCase()){
+				
 				var newPoints = state.gameInfo.currentPoints + state.playerinfo[state.playerSlot].points;
 				
 				state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
 					points: newPoints
 				})
+				//trigger end of question Phase
+				state.self.endQuestionPhase();
 			}
-			//wrong answer
+			//wrong answer TODO: make dialoge screen 
 			else{
 				console.log("wrong answer");
 			}
-			state.GameRef.update({TempSeat:false});
-			
-			
-			
-		}		
-		
+			//end Answer Timer
+			state.self.endAnswertimer();			
+		}				
 	}
 })
-
+//what happens when a player leaves midgame
 const setDisconnect = (state) => ({
 	setDisconnect : (playerSpot) => {
-		console.log("disconnecting" , playerSpot);
-		if(state.userId == state.gameInfo.hotSeat){
+		
+		if(state.playerSlot == state.gameInfo.hotSeat){
 			 state.GameRef.onDisconnect().update({HotSeat: false});
 		 }
 		 wipe = {
@@ -454,11 +516,25 @@ const setDisconnect = (state) => ({
 			 points: 0,
 			 uid: ""
 		 }
-		state.PlayersRef.child("PlayerInfo/" + playerSpot).onDisconnect().update(wipe);
-			
+		state.PlayersRef.child("PlayerInfo/" + playerSpot).onDisconnect().update(wipe);	
 	}
 })
 
+const resetBtn = (state) => ({
+	resetBtn : () => {
+		state.GameRef.update({
+				
+				 QuestionPhase: false,
+				 PickPhase: false,
+					TempSeat: false,
+				HotSeat: false,
+			  Started: false,
+			  totalQuestions: 0
+			 		
+		})
+		//state.self.endQuestionPhase();
+	}
+});
 
 const bugo = (state) => ({
 	bugo : (buglog) => {

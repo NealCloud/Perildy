@@ -56,7 +56,7 @@
         font-weight: 500;
         background: rgb(3,155,229);
         color: white;
-        border: 1px solid rgb(3,155,229);
+        
         border-radius: 3px;
         font-size: 14px;
         box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
@@ -120,18 +120,19 @@
     </style>
   </head>
   <body>
+		<h1>Welcome Perildy</h1>
     <div id="message">
  
-     <h1>Welcome Perildy</h1>
+     
       <div id="gameBoard">
 				
 			</div>
 			
       <ul id="playerSlots">
 				
-        <li id='player1'>Player 1</li>
-				<li id='player2'>Player 2</li>
-				<li id='player3'>Player 3</li>
+        <li id='Player1'>Player 1</li>
+				<li id='Player2'>Player 2</li>
+				<li id='Player3'>Player 3</li>
       </ul>
     </div>
 		<div id="timerBox">
@@ -153,11 +154,12 @@
 		<button id="buzzer">
 			Buzzer
 		</button>
-		<input type="text" id="answerInput">			
-		</input>
-	<button id="answerBtn">
-			answer Question
-		</button>
+		<form>
+				<input type="text" id="answerInput">		
+				<input type="submit" value="answer" id="answerBtn">
+		</form>
+	
+	
 	<button id="resetBtn">
 			reset 
 		</button>

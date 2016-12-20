@@ -13,11 +13,12 @@ const Perildy = (self) =>{
 			answerBtn: $('#answerBtn'),
 			answerInput: $("#answerInput"),
 			playerSlots : $("#playerSlots"),
-			Player1div : $("#player1"),
-			Player2div : $("#player2"),
-			Player3div : $("#player3"),
+			Player1div : $("#Player1"),
+			Player2div : $("#Player2"),
+			Player3div : $("#Player3"),
 			gameBoard : $("#gameBoard"),
 			resetBtn : $("#resetBtn"),
+			playerSlots : $("#playerSlots"),
 			//client info vars
 			gameName : window.location.hash.substr(1),
 			refList : ["Players", "Timers", "Category", "Game"],
@@ -72,6 +73,11 @@ const Perildy = (self) =>{
 				state.self.joinGame();
 		})
 		
+		state.playerSlots.on("click", "li", function(e){
+			var playerspot = $(this).attr("id");
+			state.self.joinGame(playerspot);
+		})
+		
 		state.startGameBtn.on("click", function(e){
 				state.self.startGame();
 		})
@@ -81,7 +87,14 @@ const Perildy = (self) =>{
 		})
 		
 		state.answerBtn.on("click", function(e){
+			e.preventDefault();			
+			if(state.playerSlot && state.gameInfo.questionPhase && state.gameInfo.tempSeat == state.playerSlot){
 				state.self.answerQuestion();
+			}
+			else{
+				console.log("no answer allowed for you")
+			}
+			
 		})
 		
 		state.resetBtn.on("click", function(e){
@@ -116,6 +129,7 @@ const Perildy = (self) =>{
 			endQuestionPhase(state),
 			resetBtn(state),
 			endAnswerTimer(state),
+			updateCurrentQuestion(state),
 			//utility methods
 			bugo(state)
 		)
@@ -243,6 +257,10 @@ const updateGameInfo = (state) => ({
 				$("#playerSlots > li").removeClass("hotseat");
 				state[state.gameInfo.hotSeat + "div"].addClass("hotseat");
 			}
+			
+			if(state.gameInfo.questionPhase){
+				state.self.updateCurrentQuestion(state.gameInfo.questionPhase);
+			}
 
 			console.log(state.gameInfo);
 		})	
@@ -282,12 +300,16 @@ const updateTimer = (state) => ({
 })
 
 const endAnswerTimer = (state) => ({
-	endAnswertimer: ()=>{
+	endAnswerTimer: ()=>{
+		console.log("ending timer for ", state.playerSlot, state.gameInfo.tempSeat);
 		//if user is in the tempseat clear it and the timer
 		if(state.gameInfo.tempSeat == state.playerSlot){
 			clearInterval(state.answerTimer);
 			state.GameRef.update({TempSeat:false});
-			state.TimersRef.child("Answer").update({Started:false});	
+			state.TimersRef.child("Answer").update({
+				Started:false,
+				Time: "clear"
+			});	
 		}							
 	}
 })
@@ -297,20 +319,11 @@ const pickQuestion = (state) =>({
 	pickQuestion: (row, col) =>{
 		//console.log(row + " " + col);
 		var qInfo = row + "/c" + col;
-		var startTime = 15;
-		
-		state.CategoryRef.child(qInfo).on("value", function(snap){
-			var catsInfo = snap.val();
-			console.log(catsInfo);
-			state.gameInfo.currentAnswer = catsInfo.Answer;
-			state.gameInfo.currentQuestion = catsInfo.Clue;
-			state.gameInfo.currentPoints = parseInt(col);
-		});																	
+		var startTime = 15;																		
 		
 		state.GameRef.update(
 			{QuestionPhase: qInfo}
-		)
-		
+		)		
 		
 		//start Question Timer
 		state.TimersRef.child("Question").update({
@@ -329,26 +342,46 @@ const pickQuestion = (state) =>({
 	}
 })
 
+const updateCurrentQuestion = (state) => ({
+	updateCurrentQuestion : (qInfo) => {
+		var points = qInfo.substr(6);
+		state.CategoryRef.child(qInfo).on("value", function(snap){
+			var catsInfo = snap.val();
+			console.log(catsInfo);
+			state.gameInfo.currentAnswer = catsInfo.Answer;
+			state.gameInfo.currentQuestion = catsInfo.Clue;
+			state.gameInfo.currentPoints = parseInt(points);
+		});	
+	}
+	
+})
+
 const endQuestionPhase = (state) => ({
 	endQuestionPhase : () => {
 		//reset ability to buzz in
 		 state.notAnswered = true;
+		 //end Answer Timer first
+		 state.self.endAnswerTimer();
 		
 		 if(state.playerSlot == state.gameInfo.hotSeat){
 			  clearInterval(state.questionTimer);
 			 	state.TimersRef.child("Question").update({				 
-					Started: false
+					Started: false,
+					Time: "Clearbo"
 			 	})
 				state.GameRef.update({
 				 QuestionPhase: false,
-				 PickPhase: true,
-				 TempSeat: false
+				 PickPhase: true				 
 			 	})	
 		 }
 		
 		//clear any other timers and temp seat
-			state.GameRef.update({TempSeat:false});
-			state.TimersRef.child("Answer").update({Started:false});
+		state.self.endAnswerTimer();
+//			state.GameRef.update({TempSeat:false});
+//			state.TimersRef.child("Answer").update({
+//					Started:false,
+//					Time: "cleared"
+//				});
 
 			if(state.gameInfo.questionsLeft <= 0 && state.playerSlot == state.gameInfo.hotSeat){
 				 console.log("Its time for final Peridly!!");							
@@ -393,18 +426,26 @@ const renderPlayerInfo = (state) => ({
 // and open up start game button if not started
 //should not activate if full
 const joinGame = (state) => ({
-	joinGame : () => {
+	joinGame : (playerSpot) => {
 		
 		state.PlayersRef.child("PlayerInfo").once("value")
 			.then(function(snap){
 			var players = snap.val();			
 			
-			if(state.userId == players.Player1.uid || !players.Player1.uid){
-				state.playerSlot = "Player1";
-				state.self.setPlayer("Player1");
-				state.self.setDisconnect(state.playerSlot);
-				console.log("you are player1");
+			if(state.playerSlot){
+				console.log("sorry you already are " + state.playerSlot);
 			}
+			
+			else if(state.userId == players[playerSpot].uid || !players[playerSpot].uid){
+				state.playerSlot = playerSpot;
+				state.self.setPlayer(playerSpot);
+				state.self.setDisconnect(state.playerSlot);
+				console.log("you are " + playerSpot);
+			}
+			else{
+				console.log('that spot is filled')
+			}
+			
 			
 			if(!state.gameInfo.hotSeat){
 				state.GameRef.update({HotSeat: state.playerSlot});
@@ -481,9 +522,8 @@ const buzzGame = (state) => ({
 //gives attempted answer to question
 //award points and clear answer timer 
 const answerQuestion = (state) => ({
-	answerQuestion : () => {
-		//make sure they are in the temp seat and its question phase
-		if(state.gameInfo.questionPhase && state.gameInfo.tempSeat == state.playerSlot){
+	answerQuestion : () => {	
+		console.log("answering question");
 			//if correct answer award points and update to player stats
 			if(state.gameInfo.currentAnswer.toLowerCase() == state.answerInput.val().toLowerCase()){
 				
@@ -492,15 +532,23 @@ const answerQuestion = (state) => ({
 				state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
 					points: newPoints
 				})
+				
 				//trigger end of question Phase
-				state.self.endQuestionPhase();
-			}
-			//wrong answer TODO: make dialoge screen 
-			else{
-				console.log("wrong answer");
-			}
-			//end Answer Timer
-			state.self.endAnswertimer();			
+				state.TimersRef.child("Question").update({
+					 Time: 0					 						
+				 })				
+				
+				//set this player to be in the hotseat
+				if(state.gameInfo.hotSeat != state.playerSlot){
+					state.GameRef.update({				
+						HotSeat: state.playerSlot		
+					})
+				}
+			
+			}	
+		else{
+			//end Answer Timer  this is done in endQuestion Phase too
+			state.self.endAnswerTimer();
 		}				
 	}
 })

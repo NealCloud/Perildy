@@ -1,75 +1,73 @@
 {
 	"Games":{
 		"perod":{
-			"Players" :{				
-					"PlayerSlots":{
-						"Player1": false,
-						"Player2": false,
-						"Player3" : false				
-					},
+			"Players" :{	
 					"PlayerInfo":{
-						"Player1":{
-							"Name" : "",
-							"uid" : "",
-							"points" : 0
-						},
+							"Player1":{
+								"Name" : "",
+								"uid" : "",
+								"points" : 0
+							},						
 							"Player2":{
-							"Name" : "",
-							"uid" : "",
-							"points" : 0
-						},"Player3":{
-							"Name" : "",
-							"uid" : "",
-							"points" : 0
-						}			
+								"Name" : "",
+								"uid" : "",
+								"points" : 0
+							},						
+							"Player3":{
+								"Name" : "",
+								"uid" : "",
+								"points" : 0
+							}			
 				}
 			},	
 
 			"Timers" : {
 				"Answer" : {
-					"Active" : false,
-					"User" : false
+					"Started" : false,
+					"Pause" : false
 				},
 				"Game" : {
 					"Started" : false,
 					"Pause" : false
 				},
 				"Question" : {
-					"Active" : false,
-					"Pause" : false
+					"Started" : false,
+					"Pause" : false,
+					"Time" : 0
 				}
-
 			},
 
 			"Game":{
-				"Started": "false",
-				"HotSeat" : "false",
-				"TempSeat" : "false"
+				"Started": false,
+				"HotSeat" : false,
+				"TempSeat" : false,
+				"PickPhase": false,
+				"QuestionPhase": false,
+				"totalQuestions": 0
 			},
 
-
 			"Category": {
-				"1":{
+				"cat1":{
 					"Name": "Hots",
-					"100": {
+					"c100": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
 						"done": "false"
 					},
-					"200" : {
+					"c200" : {
 						"Clue" : "who is worst hero",
 						"Answer" : "dablow",
 						"done" : "false"
 					}
 				},
-					"2":{
+				"cat2":{
 					"Name": "Bots",
-					"100": {
+					"c100": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
 						"done": "false"
 					},
-					"200" : {
+					"c200" : {
 						"Clue" : "who is worst hero",
 						"Answer" : "dablow",
 						"done" : "false"

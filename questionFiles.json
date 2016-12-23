@@ -1,4 +1,9 @@
 {
+	
+	"Files":{
+		"Test": true
+	},
+	
 	"Games":{
 		"perod":{
 			"Players" :{	
@@ -24,11 +29,13 @@
 			"Timers" : {
 				"Answer" : {
 					"Started" : false,
-					"Pause" : false
+					"Pause" : false,
+					"Time" : 0
 				},
 				"Game" : {
 					"Started" : false,
-					"Pause" : false
+					"Pause" : false,
+					"Time" : 0
 				},
 				"Question" : {
 					"Started" : false,
@@ -49,28 +56,58 @@
 			"Category": {
 				"cat1":{
 					"Name": "Hots",
-					"c100": {
+					"c200": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
 						"done": "false"
 					},
-					"c200" : {
+					"c400" : {
 						"Clue" : "who is worst hero",
 						"Answer" : "dablow",
 						"done" : "false"
+					},
+					"c600": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": "false"
+					},
+					"c800" : {
+						"Clue" : "who is worst hero",
+						"Answer" : "dablow",
+						"done" : "false"
+					},
+					"c1000": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": "false"
 					}
 				},
 				"cat2":{
 					"Name": "Bots",
-					"c100": {
+					"c200": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
 						"done": "false"
 					},
-					"c200" : {
+					"c400" : {
 						"Clue" : "who is worst hero",
 						"Answer" : "dablow",
 						"done" : "false"
+					},
+					"c600": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": "false"
+					},
+					"c800" : {
+						"Clue" : "who is worst hero",
+						"Answer" : "dablow",
+						"done" : "false"
+					},
+					"c1000": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": "false"
 					}
 				}
 

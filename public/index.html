@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Welcome to Firebase Hosting</title>
+    <title>Welcome to Perildy</title>
     <style media="screen">
       body {
         font-family: Roboto, Arial, sans-serif;
@@ -55,48 +55,32 @@
         font-size: 14px;
         box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
       }
-			#gameBoard{
-				display: flex;
-				flex-direction: column
-			}
-			
-			.clues{
-				height: 33%;
-				width: 33%;
-				border: 1px solid black;
-			}
-			.cluetitle{
 				
-			}
-		
-			
-			
+						
     </style>
   </head>
   <body>
     <div id="message">
       <h1>Welcome Perildy</h1>
-      <div id="gameBoard">
-				<div class='cluetitle'>clue one</div>
-				<div class='clues'>clue one</div>
-				<div class='clues'>clue one</div>
-				<div class='clues'>clue one</div>
-			</div>
-      <ul id="playerSlots">
-        <li id='player1'>Player 1</li>
-				<li id='player2'>Player 2</li>
-				<li id='player3'>Player 3</li>
-      </ul>
-    </div>
+     
+     </div>
 		<button id="signIn">
 			Sing In!
 		</button>
 		<button id="signOut">
 			Sing Out!
 		</button>
-		<button id="joinGame">
-			join Game!
+		<button id="jservice">
+			j servicer!
 		</button>
+		<form id="image-form" action="#">
+            <input id="mediaCapture" type="file" accept="all/*">
+            <button id="submitImage" title="Add an image" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--amber-400 mdl-color-text--white">
+              <i class="material-icons">image</i>
+            </button>
+          </form>
+		<a id='downloadAnchorElem'>yololo</a>
+		
 		<a href="perody.html#perod">game1</a>
 <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 <script>
@@ -112,9 +96,7 @@
 </script>
 		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<!--
 		<script src="scripts/firebaseUtils.js"></script>
-		<script src="scripts/peridyRoom.js"></script>
--->
+		<script src="scripts/lobby.js"></script>
   </body>
 </html>

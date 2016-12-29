@@ -5,8 +5,11 @@ const Lobby = (self) =>{
 			signOutBtn : $("#signOut"),			
 			fileLoader :$("#mediaCapture"),
 			jservice : $("#jservice"),
+			gameList : $("#message"),
+			deleteBtn: $(".deleteGame"),
+			gameSlots: $("#gameSlots"),
 			//client info vars		
-			refList : ["Players", "Timers", "Category", "Game"],
+			refList : ["Files", "Games"],
 			notRendered : true,	
 			
 			//Server info vars	
@@ -33,6 +36,11 @@ const Lobby = (self) =>{
 				state.self.signOut();
 		})
 		
+			state.gameList.on("click", ".deleteGame", function(e){
+				console.log("wat the heck");
+				state.self.deleteGame($(this));
+		})
+			
 			state.jservice.on("click", function(e){
 				state.self.getQuestions();
 		})
@@ -58,6 +66,8 @@ const Lobby = (self) =>{
 			loadGame(state),	
 			saveImageMessage(state),
 			getQuestions(state),
+			createGameJson(state),
+			deleteGame(state),
 			//utility methods
 			bugo(state)
 		)
@@ -84,7 +94,7 @@ const onSignIn = (state) => ({
 		
 		//check if game was rendered already
 		if(state.notRendered){
-				state.self.createRefs(state.refList, "Files/");
+				state.self.createRefs(state.refList, "");
 			  state.notRendered = false;
 				state.self.loadGame();
 		}							
@@ -95,14 +105,30 @@ const loadGame = (state) => ({
 	loadGame : () => {	
 		console.log("gamea loaded");
 		
+		state.GamesRef.on('child_added', addGame);
+		state.GamesRef.on('child_removed', removeGame); 	
+		var noSpaceId = "";
 		
+		function addGame(snap){			
+			noSpaceId = snap.key.replace(' ', '');			
+			var newGame = $("<li>", {	
+				id: noSpaceId,
+				class: "gameItem",
+				html: "<a href='perody.html#" + snap.key + "'>" + snap.key + "'s Game</a><span class='deleteGame' datakey='" + snap.key + "' >X</span>"
+			})
+			state.gameList.append(newGame);
+		}
+		
+		function removeGame(snap){			
+			$("#" + noSpaceId).remove();
+		}
 	}
 })
 
 const getQuestions = (state) => ({
 	getQuestions : () => {	
 		console.log("gamea loaded");
-		var myData = {count: 1};
+		var myData = {count: 1, offset:0};
 //		$.ajax({
 //			 
 //			url: 'http://www.jservice.io/api/random',
@@ -115,18 +141,72 @@ const getQuestions = (state) => ({
 //			},
 //			error: function() { alert('Failed!'); },
 //
-//		});
+//		});10044 text.replace(/\W+/g, " ")
 //		
-		  $.getJSON("http://jservice.io/api/random", myData, function(result){
+//		  $.getJSON("http://jservice.io/api/categories", myData, function(result){
+//				    console.log(result);
+//            $.each(result, function(i, field){
+//							console.log(i, field);
+//                $("#message").append(field.answer + " ");
+//            });
+//        });
+		  var perildyQ = "";
+		  $.getJSON("http://jservice.io/api/category", {id: 10044}, function(result){
 				    console.log(result);
-            $.each(result, function(i, field){
-							console.log(i, field);
-                $("#message").append(field.answer + " ");
-            });
+				    perildyQ = result;
+//            $.each(result, function(i, field){
+//							console.log(i, field);
+//                $("#message").append(field.answer + " ");
+//            });
         });
-//		
+		//gotten from param
+		var newData = {Category: {}};
+		Object.assign(newData, roomData.emptyRoom);	
+		console.log(newData);
+	
+		state.self.createGameJson(newData, "Literacy", 1, dummyData);
+		var updateObj = {};
+		updateObj[state.userName] = newData;
+		
+		
+		state.GamesRef.update(updateObj);
+	//	state.self.createGameJson(newData, "Books N Stuff", 2, dummyData);
+		
 	}
 })
+const createGameJson = (state) => ({
+	createGameJson : (catObj, catName, catCol, catData) => {		 
+		
+		var pointData = [100, 200, 300, 400, 500];
+		
+		
+		var len = catData.length;
+		
+		var startInt = Math.floor((Math.random() * (len/5)) + 1);
+	 		
+		console.log(startInt);
+		
+		len = startInt * 5;
+		
+		catObj.Category['cat' + catCol] = {Name: catName};
+		
+		for(let i = len - 5, b = 0; i < len; i++, b++){			
+			catObj.Category['cat' + catCol]["c" + pointData[b]] = {
+				Clue: catData[i].question, 
+				Answer: catData[i].answer.replace(/<\/?i[^>]*>/g,"").replace(/\W+/g, " ").trim(),
+				done: false
+			};
+		}			
+	}
+});
+
+const deleteGame = (state) => ({
+	deleteGame : (e) => {
+		var gameName = e.attr("datakey");
+		console.log('delete', gameName);
+		state.GamesRef.child(gameName).remove();
+	}
+});
 
 const saveImageMessage = (state) => ({
 	saveImageMessage : (event) => {	

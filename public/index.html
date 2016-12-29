@@ -11,7 +11,8 @@
       }
 
       a {
-        color: rgb(3,155,229);
+        color: white;
+				text-decoration: none;
       }
 
       #message {
@@ -42,11 +43,10 @@
         text-align: center;
       }
 
-      #message li{
-        display: inline-block;
+      #message li{        
         padding: 8px;
         text-transform: uppercase;
-        text-decoration: none;
+        
         font-weight: 500;
         background: rgb(3,155,229);
         color: white;
@@ -54,7 +54,18 @@
         border-radius: 3px;
         font-size: 14px;
         box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
+				margin: 5px 0;
       }
+			.gameItem{
+			 display: flex;
+			 text-decoration: none;
+			 justify-content: space-around;
+			}
+			.deleteGame{
+				border: 1px solid red;
+				border-radius: 2px;
+				background-color: red;
+			}
 				
 						
     </style>
@@ -62,8 +73,12 @@
   <body>
     <div id="message">
       <h1>Welcome Perildy</h1>
-     
+			<p>Join a Game or create one</p>
+     <ul id="gameSlots">				
+       
+      </ul>
      </div>
+		
 		<button id="signIn">
 			Sing In!
 		</button>
@@ -96,7 +111,9 @@
 </script>
 		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+		<script src="scripts/roomData.js"></script>
 		<script src="scripts/firebaseUtils.js"></script>
 		<script src="scripts/lobby.js"></script>
+		
   </body>
 </html>

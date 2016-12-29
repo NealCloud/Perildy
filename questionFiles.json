@@ -11,17 +11,20 @@
 							"Player1":{
 								"Name" : "",
 								"uid" : "",
-								"points" : 0
+								"points" : 0,
+								"chat" : ""
 							},						
 							"Player2":{
 								"Name" : "",
 								"uid" : "",
-								"points" : 0
+								"points" : 0,
+								"chat" : ""
 							},						
 							"Player3":{
 								"Name" : "",
 								"uid" : "",
-								"points" : 0
+								"points" : 0,
+								"chat" : ""
 							}			
 				}
 			},	
@@ -56,58 +59,58 @@
 			"Category": {
 				"cat1":{
 					"Name": "Hots",
-					"c200": {
+					"c100": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
-						"done": "false"
+						"done": false
+					},
+					"c200" : {
+						"Clue" : "who is worst hero",
+						"Answer" : "dablow",
+						"done" : false
+					},
+					"c300": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": false
 					},
 					"c400" : {
 						"Clue" : "who is worst hero",
 						"Answer" : "dablow",
-						"done" : "false"
+						"done" : false
 					},
-					"c600": {
+					"c500": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
-						"done": "false"
-					},
-					"c800" : {
-						"Clue" : "who is worst hero",
-						"Answer" : "dablow",
-						"done" : "false"
-					},
-					"c1000": {
-						"Clue" : "who is best hero",
-						"Answer" : "Valla",
-						"done": "false"
+						"done": false
 					}
 				},
 				"cat2":{
 					"Name": "Bots",
-					"c200": {
+					"c100": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
-						"done": "false"
+						"done": false
+					},
+					"c200" : {
+						"Clue" : "who is worst hero",
+						"Answer" : "dablow",
+						"done" : false
+					},
+					"c300": {
+						"Clue" : "who is best hero",
+						"Answer" : "Valla",
+						"done": false
 					},
 					"c400" : {
 						"Clue" : "who is worst hero",
 						"Answer" : "dablow",
-						"done" : "false"
+						"done" : false
 					},
-					"c600": {
+					"c500": {
 						"Clue" : "who is best hero",
 						"Answer" : "Valla",
-						"done": "false"
-					},
-					"c800" : {
-						"Clue" : "who is worst hero",
-						"Answer" : "dablow",
-						"done" : "false"
-					},
-					"c1000": {
-						"Clue" : "who is best hero",
-						"Answer" : "Valla",
-						"done": "false"
+						"done": false
 					}
 				}
 

@@ -2,7 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Welcome to Firebase Hosting</title>
+    <title>Perildy</title>
+		<link href="https://fonts.googleapis.com/css?family=Caveat|Waiting+for+the+Sunrise|Zeyada" rel="stylesheet">
     <style media="screen">
 			*{
 				box-sizing: border-box;
@@ -18,9 +19,8 @@
         color: rgb(3,155,229);
       }
 
-      #message {
-        max-width: 900px;
-				height: 600px;
+      #message {       
+				height: 450px;
         position: relative;
         box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2),0 1px 1px 0 rgba(0,0,0,0.14),0 2px 1px -1px rgba(0,0,0,0.12);
         border-radius: 2px;
@@ -43,68 +43,68 @@
       #playerSlots ul {
         list-style: none;
         margin: 16px 0 0;
-        padding: 0;
-        text-align: center;
+        padding: 0;        
 				width: 100%;
+				position: relative;				
       }
 
       #playerSlots li{
         display: inline-block;
-        padding: 8px;
+				position: relative;
+        padding: 10px;
         text-transform: uppercase;
         text-decoration: none;
-        font-weight: 500;
+				
         background: rgb(3,155,229);
         color: white;
-        
-        border-radius: 3px;
-        font-size: 14px;
+        width: 100px;
+				height: 100px;
+        border-radius: 10px;       
         box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
       }
 			
-				#gameBoard{
-				display: flex;
-				flex-flow: column wrap;
+			#gameBoard{
+					display: flex;
+					flex-flow: column wrap;
 					justify-content: flex-start;
 					position: absolute;
 					top: 0;
-					left: 0;
-					width: 100%;
-					height: 500px;
-					
+					left: 0;					
+					height: 450px;			
 			}
 			#playerSlots{
-				position: absolute;
-				top: 500px;
-				left: 0px;
+			
 			}
 			
 			.clues{
-				height: 100px;
-				width: 100px;
+				height: 75px;
+				width: 75px;
 				color: yellow;
 				border: 1px solid black;
+				text-align: center;
+				line-height: 75px;
 			}
 			.cluetitle{
-				height: 100px;
-				width: 100px;
+				height: 75px;
+				width: 75px;
 				border: 2px solid black;
+				text-align: center;				
 			}
 			#timerBox{
-				position: relative;
+				position: absolute;
 				display: inline-block;
 				border: 2px solid black;
-				width: 50px;
-				height: 50px;
+				width: 75px;
+				height: 75px;
 			}
 			#timerBox2{
-				position: relative;
+				position: absolute;
 				display: inline-block;
 				border: 2px solid black;
 				width: 50px;
 				height: 50px;
 			}
-				.picked {
+			.picked {
 				background-color: red;
 			}
 			.unpicked {
@@ -112,55 +112,160 @@
 			}
 			.hotseat{
 				border: 3px solid yellow;
-			}
-			
+			}			
 			.tempseat{
 				border: 6px solid red;
+			}		
+			.namo{
+				position: absolute;
+				top: 50%;				
+				
+				font-size: 30px;				
+			}	
+			.money{
+				position: absolute;
+				left: 30%;
+				font-size: 20px;
+			}					
+			.debt{
+				color: red;
 			}
+			#Player1 .namo{
+				font-family: 'Zeyada', cursive;
+			}
+			#Player2 .namo{
+				font-family: 'Caveat', cursive;
+			}
+			#Player3 .namo{
+				font-family: 'Zeyada', cursive;
+			}
+			#questionBoard{
+				background-color: green;
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				top: 0px;
+				left: 0px;
+				text-align: center;
+				vertical-align: middle;
+				transform: scale(0);
+				transition: all .5s ease-in-out;
+			}			
+			#questionBoard > p{
+				line-height: 100px;
+				font-size: 25px;	
+			}
+			#questionBoard{
+				
+			}
+			
+			.zoom{
+				transform: scale(1); 
+			}			
+			.gameBtn {
+				position: absolute;
+				background-color: #4CAF50;
+				border: none;
+				color: white;
+				padding: 15px 32px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 16px;
+				margin: 4px 2px;
+				cursor: pointer;				
+			}
+			.buttonBox{
+				position: absolute;
+			}			
+			.gameForm, .btnText{
+				position: absolute;
+				bottom: 30%;
+			}
+			#playerBox{
+				position: relative;
+				top: 100px;
+			}
+			
+			.chat{				
+				position: relative;
+				padding: 15px;				
+				color: #000;
+				background: #f3961c;		
+				border-radius: 10px;
+				width: 200px;
+			}
+			
+		.chat:after {
+				content: "";
+				position: absolute;
+				bottom: -15px;
+				left: 50px;
+				border-width: 15px 15px 0;
+				border-style: solid;
+				border-color: #f3961c transparent;
+				display: block;
+				width: 0;
+		}
+			
     </style>
   </head>
-  <body>
-		<h1>Welcome Perildy</h1>
+  <body>		
     <div id="message">
- 
-     
-      <div id="gameBoard">
-				
+      
+      <div id="gameBoard"></div>
+			<div id="questionBoard">
+			 <p>Question</p>
 			</div>
-			
-      <ul id="playerSlots">
-				
-        <li id='Player1'>Player 1</li>
-				<li id='Player2'>Player 2</li>
-				<li id='Player3'>Player 3</li>
-      </ul>
+      
     </div>
-		<div id="timerBox">
-			</div>
-			<div id="timerBox2">
-			</div>
-		<button id="signIn">
-			Sing In!
-		</button>
-		<button id="signOut">
-			Sing Out!
-		</button>
-		
-		<button id="startGame">
-			start Game!
-		</button>
-		<button id="buzzer">
-			Buzzer
-		</button>
-		<form>
+		<div id="playerBox">
+			<ul id="playerSlots">
+				<p id='p1chat' class="chat">yo yo</p>
+        <li id='Player1' class="playerStand">
+					<span class="money">$0</span>
+					<span class="namo">Player 1</span>
+				</li>
+					
+				<li id='Player2' class="playerStand">
+					<span class="money">$0</span>
+					<span class="namo">Player 1</span>
+				</li>
+				
+				<li id='Player3' class="playerStand">
+					<span class="money">$0</span>
+					<span class="namo">Player 1</span>
+				</li>
+				<li class="buttonBox">
+					<span class="btnText">Timer</span>
+						<div id="timerBox"></div>					
+					<div id="timerBox2"></div>	
+		<form class="gameForm">
+			
 				<input type="text" id="answerInput">		
-				<input type="submit" value="answer" id="answerBtn">
+				<input  type="submit" value="answer" id="answerBtn" class="gameBtn">
+				<button class="gameBtn" id="startGame">
+					start Game!
+				</button>
+			  <button id="buzzer" class="gameBtn">
+					Buzzer
+				</button>
 		</form>
-	
+				</li>
+      </ul>
+			
+	<button id="signIn">
+				Sign In!
+			</button>
+			<button id="signOut">
+				Sign Out!
+			</button>
 	
 	<button id="resetBtn">
 			reset 
 		</button>
+		</div>
+	
 		<script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 <script>
   // Initialize Firebase

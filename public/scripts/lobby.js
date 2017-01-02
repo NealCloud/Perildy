@@ -8,10 +8,11 @@ const Lobby = (self) =>{
 			gameList : $("#message"),
 			deleteBtn: $(".deleteGame"),
 			gameSlots: $("#gameSlots"),
+			testBtn: $("#testBtn"),
 			//client info vars		
 			refList : ["Files", "Games"],
 			notRendered : true,	
-			
+			gamesList: {},
 			//Server info vars	
 									
 			//must be initialized
@@ -42,7 +43,11 @@ const Lobby = (self) =>{
 		})
 			
 			state.jservice.on("click", function(e){
-				state.self.getQuestions();
+				state.self.createGame();
+		})
+			
+			state.testBtn.on("click", function(e){
+				state.self.testMode();
 		})
 		
 		state.fileLoader.on("change", function(e){
@@ -68,7 +73,9 @@ const Lobby = (self) =>{
 			getQuestions(state),
 			createGameJson(state),
 			deleteGame(state),
+			createGame(state),
 			//utility methods
+			testMode(state),
 			bugo(state)
 		)
 }
@@ -103,14 +110,15 @@ const onSignIn = (state) => ({
 //load game should only happen once
 const loadGame = (state) => ({
 	loadGame : () => {	
-		console.log("gamea loaded");
+		console.log("loading Games");
 		
 		state.GamesRef.on('child_added', addGame);
 		state.GamesRef.on('child_removed', removeGame); 	
 		var noSpaceId = "";
 		
 		function addGame(snap){			
-			noSpaceId = snap.key.replace(' ', '');			
+			noSpaceId = snap.key.replace(' ', '');
+			state.gamesList[noSpaceId] = true;
 			var newGame = $("<li>", {	
 				id: noSpaceId,
 				class: "gameItem",
@@ -120,14 +128,38 @@ const loadGame = (state) => ({
 		}
 		
 		function removeGame(snap){			
+			noSpaceId = snap.key.replace(' ', '');
+			state.gamesList[noSpaceId] = false;
+			console.log("removing", noSpaceId);
 			$("#" + noSpaceId).remove();
 		}
 	}
 })
 
+const createGame = (state) => ({
+	createGame : () => {
+		var name = state.userName.replace(' ', '');
+		if(name in state.gamesList){
+			if(state.gamesList[name]){
+					console.log("game already made");
+					return
+			}		
+		}
+		else{
+			state.self.getQuestions();
+		}
+	}
+	
+})
+
 const getQuestions = (state) => ({
 	getQuestions : () => {	
-		console.log("gamea loaded");
+	
+		
+		
+		console.log("created Game Room");
+		
+		
 		var myData = {count: 1, offset:0};
 //		$.ajax({
 //			 
@@ -152,7 +184,8 @@ const getQuestions = (state) => ({
 //        });
 		  var perildyQ = "";
 		  $.getJSON("http://jservice.io/api/category", {id: 10044}, function(result){
-				    console.log(result);
+				    console.log(result, dummyData);
+					
 				    perildyQ = result;
 //            $.each(result, function(i, field){
 //							console.log(i, field);
@@ -244,7 +277,12 @@ const saveImageMessage = (state) => ({
 	}
 		
 })
-  
+
+const testMode = (state) => ({
+	testMode : (buglog) => {
+		console.log(state.gamesList);
+	}
+});
 
 const bugo = (state) => ({
 	bugo : (buglog) => {

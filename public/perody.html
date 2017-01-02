@@ -57,8 +57,8 @@
 				
         background: rgb(3,155,229);
         color: white;
-        width: 100px;
-				height: 100px;
+        width: 225px;
+				height: 150px;
         border-radius: 10px;       
         box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
       }
@@ -94,8 +94,12 @@
 				position: absolute;
 				display: inline-block;
 				border: 2px solid black;
-				width: 75px;
-				height: 75px;
+				width: 50px;
+				height: 50px;
+				left: 10px;
+				top: 30px;
+				color: black;
+				
 			}
 			#timerBox2{
 				position: absolute;
@@ -103,6 +107,9 @@
 				border: 2px solid black;
 				width: 50px;
 				height: 50px;
+				left: 90px;
+				top: 30px;
+				color: red;
 			}
 			.picked {
 				background-color: red;
@@ -147,8 +154,7 @@
 				top: 0px;
 				left: 0px;
 				text-align: center;
-				vertical-align: middle;
-				transform: scale(0);
+				vertical-align: middle;				
 				transition: all .5s ease-in-out;
 			}			
 			#questionBoard > p{
@@ -160,14 +166,14 @@
 			}
 			
 			.zoom{
-				transform: scale(1); 
+				transform: scale(0); 
 			}			
 			.gameBtn {
 				position: absolute;
 				background-color: #4CAF50;
 				border: none;
 				color: white;
-				padding: 15px 32px;
+				padding: 10px 40px;
 				text-align: center;
 				text-decoration: none;
 				display: inline-block;
@@ -178,35 +184,69 @@
 			.buttonBox{
 				position: absolute;
 			}			
-			.gameForm, .btnText{
+			.gameForm{
 				position: absolute;
 				bottom: 30%;
+			}
+			
+			.btnText{
+				position: absolute;
 			}
 			#playerBox{
 				position: relative;
 				top: 100px;
 			}
 			
-			.chat{				
-				position: relative;
+			.chat, .chatMid{				
+/*				//position: relative;*/
 				padding: 15px;				
 				color: #000;
 				background: #f3961c;		
 				border-radius: 10px;
 				width: 200px;
+				display: inline-block;
 			}
+			
+			
 			
 		.chat:after {
 				content: "";
 				position: absolute;
 				bottom: -15px;
-				left: 50px;
-				border-width: 15px 15px 0;
+				left: 15px;
+				border-width: 15px 5px 0;
 				border-style: solid;
 				border-color: #f3961c transparent;
 				display: block;
 				width: 0;
 		}
+			
+			.chatMid:after {
+				content: "";
+				position: absolute;
+				bottom: -15px;
+				left: 15px;
+				border-width: 15px 5px 0;
+				border-style: solid;
+				border-color: #f3961c transparent;
+				display: block;
+				width: 0;
+		}
+			
+			#Player1chat, #Player3chat, #Player2chat{
+				position: absolute;
+				top: -80px;
+				
+			}
+			#Player1chat{
+				
+			}
+			#Player3chat{
+				
+			}
+			#Player2chat{
+				
+			}
 			
     </style>
   </head>
@@ -215,29 +255,35 @@
       
       <div id="gameBoard"></div>
 			<div id="questionBoard">
-			 <p>Question</p>
+			 <p>Game Not Ready</p>
+				<img src="https://www.google.com/images/spin-32.gif">
 			</div>
       
     </div>
 		<div id="playerBox">
 			<ul id="playerSlots">
-				<p id='p1chat' class="chat">yo yo</p>
+				
+				
         <li id='Player1' class="playerStand">
+					<p id='Player1chat' class="chat">Not</p>
 					<span class="money">$0</span>
 					<span class="namo">Player 1</span>
 				</li>
 					
 				<li id='Player2' class="playerStand">
+					<p id='Player2chat' class="chat">Yet</p>
 					<span class="money">$0</span>
-					<span class="namo">Player 1</span>
+					<span class="namo">Player 2</span>
 				</li>
 				
 				<li id='Player3' class="playerStand">
+					<p id='Player3chat' class="chat">Loaded</p>
 					<span class="money">$0</span>
-					<span class="namo">Player 1</span>
+					<span class="namo">Player 3</span>
 				</li>
 				<li class="buttonBox">
-					<span class="btnText">Timer</span>
+					<span class="btnText">Timer &nbsp&nbsp&nbsp &nbsp Timer2 </span>
+					
 						<div id="timerBox"></div>					
 					<div id="timerBox2"></div>	
 		<form class="gameForm">

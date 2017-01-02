@@ -20,6 +20,7 @@ const Perildy = (self) =>{
 			resetBtn : $("#resetBtn"),
 			playerSlots : $("#playerSlots"),
 			questionBoard : $("#questionBoard"),
+			questionBoardText : $("#questionBoard p"),
 			//client info vars
 			gameName : window.location.hash.substr(1),
 			refList : ["Players", "Timers", "Category", "Game"],
@@ -37,8 +38,8 @@ const Perildy = (self) =>{
 				QuestionPhase: false,
 				HotSeat: false,
 				TempSeat: false,
-				currentQuestion: false,
-				currentAnswer: false,
+				currentQuestion: "",
+				currentAnswer: "",
 				currentPoints: 0,
 				questionsLeft: null
 			},
@@ -63,6 +64,7 @@ const Perildy = (self) =>{
 		state.joinGameBtn.hide();
 	  state.buzzerBtn.hide();
 	  state.answerBtn.hide();
+		state.startGameBtn.hide();
 		//event handlers
 	  //allow if signed out
 		state.signInBtn.on("click", function(e){
@@ -74,7 +76,10 @@ const Perildy = (self) =>{
 		})
 		//remove after testing
 		state.joinGameBtn.on("click", function(e){
+			if(!state.notRendered){
 				state.self.joinGame();
+			}
+				
 		})
 		//allow at any time
 		state.playerSlots.on("click", ".playerStand", function(e){
@@ -83,27 +88,34 @@ const Perildy = (self) =>{
 		})
 		//allow if game has not started yet
 		state.startGameBtn.on("click", function(e){
-			if(state.playerSlot && state.gameInfo.Started){
+			e.preventDefault();	
+			if(state.playerSlot && !state.gameInfo.Started){
 				state.startGameBtn.hide();
 				state.self.startGame();				
-			}
+			}			
 				
 		})
 		//allow if game is question phase and temp seat open
 		state.buzzerBtn.on("click", function(e){
+			e.preventDefault();
 				state.self.buzzGame();
 		})
 		//allow if joined game is question phase and is in temp seat
 		state.answerBtn.on("click", function(e){
 			e.preventDefault();			
 			if(state.playerSlot && state.gameInfo.QuestionPhase && state.gameInfo.TempSeat == state.playerSlot){
-				state.self.answerQuestion();
+				state.self.answerQuestion();		
+				
+				
 			}
-			else{
+			else if(state.playerSlot){
 				state.PlayersRef.child("PlayerInfo/" + state.playerSlot)
 					.update({
 						chat:state.answerInput.val()
 								 })
+				  state.answerInput.val("");
+			}
+			else{			
 				console.log("no answer allowed for you")
 			}			
 		})
@@ -185,6 +197,8 @@ const loadGame = (state) => ({
 		state.self.updateGameInfo();
 		state.self.updateTimer();
 		state.self.updateGameBoard();
+		
+		
 	}
 })
 
@@ -235,7 +249,7 @@ const createGameBoard = (state) => ({
 				 	 var divID = board.attr('id');
 				 //TODO: has unpicked class
 				   var picked = board.hasClass("unpicked");
-					 if(picked && state.gameInfo.PickPhase && state.playerSlot && state.playerSlot == state.gameInfo.HotSeat){
+					 if(picked && state.gameInfo.PickPhase && state.playerSlot && state.playerSlot == state.gameInfo.HotSeat && state.gameInfo.Started){
 						 //start Question Timer
 						 //trigger Answer Phase
 						 //end pick Phase
@@ -304,9 +318,16 @@ const updateGameInfo = (state) => ({
 			switch(snap.key){
 				case "Started": 
 					state.gameInfo.Started = serverInfo;
+					if(serverInfo){
+						state.startGameBtn.hide();
+					}
+					else{
+						state.startGameBtn.show();
+					}
 					break;
 				case "PickPhase":
 					state.gameInfo.PickPhase = serverInfo;
+					
 					break;
 				case "HotSeat":
 					state.gameInfo.HotSeat = serverInfo;
@@ -328,14 +349,22 @@ const updateGameInfo = (state) => ({
 				case "QuestionPhase":
 					state.gameInfo.QuestionPhase = serverInfo;
 					if(state.gameInfo.QuestionPhase){
-						state.questionBoard.addClass("zoom");
-						state.self.updateCurrentQuestion(state.gameInfo.QuestionPhase);				
+						state.questionBoard.removeClass("zoom");						
+						state.self.updateCurrentQuestion(state.gameInfo.QuestionPhase);
+						state.questionBoardText.text(state.gameInfo.currentQuestion);
+						state.buzzerBtn.show();		
+		
 					}
 					else {
+						state.buzzerBtn.hide();						
+						state.questionBoard.addClass("zoom");
 						state.self.endQuestionPhase();
 					}
+					
+				
 					break;
-			}		
+			}				
+			
 //												
 //			if(state.playerSlot){
 //				state.self.setDisconnect(state.playerSlot);			}			
@@ -360,8 +389,11 @@ const updateTimer = (state) => ({
 				case "Question":
 					state.timerBox.text(serverInfo.Time);
 					if(serverInfo.Time <= 0 && serverInfo.Started && state.gameInfo.QuestionPhase){
-						console.log("question timer end triggered");						
-						state.self.endQuestionPhase();				
+						console.log("question timer end triggered");
+						//use instead?
+						state.GameRef.update({
+							 QuestionPhase: false
+						})										
 					}
 					break;
 					//if Answer ticks mark on timer2 text
@@ -379,14 +411,55 @@ const updateTimer = (state) => ({
 
 const endAnswerTimer = (state) => ({
 	endAnswerTimer: ()=>{
+		
 		console.log("ending timer for ", state.playerSlot, state.gameInfo.TempSeat);
+		
+			if(state.playerSlot && state.gameInfo.TempSeat == state.playerSlot){
+				
+				state.PlayersRef.child("PlayerInfo/" + state.playerSlot)
+					.update({
+						chat:"What is " + state.answerInput.val()
+								 })
+				  
+				
+				if(state.gameInfo.currentAnswer.toLowerCase() == state.answerInput.val().toLowerCase()){
+
+					state.TimersRef.child("Question").update({
+						 Time: 0					 						
+					 }).then(function(){
+							if(state.gameInfo.HotSeat != state.playerSlot){
+								state.GameRef.update({				
+									HotSeat: state.playerSlot		
+								})
+							}
+					})		
+
+					var newPoints = state.playerinfo[state.playerSlot].points + (state.gameInfo.currentPoints * 2);
+
+					state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
+						points: newPoints
+					})		
+
+
+				}	
+				else{		
+
+
+						var newPoints = state.playerinfo[state.playerSlot].points - (state.gameInfo.currentPoints * 2);
+
+						state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
+							points: newPoints
+						})		
+				}				
+	
+		state.answerInput.val("");
 		//if user is in the tempseat clear it and the timer
-		if(state.gameInfo.TempSeat == state.playerSlot){
+	
 			clearInterval(state.answerTimer);
 			state.GameRef.update({TempSeat:false});
 			state.TimersRef.child("Answer").update({
-				Started:false,
-				Time: "clear"
+				Started: false,
+				Time: "X"
 			});	
 		}							
 	}
@@ -447,14 +520,15 @@ const endQuestionPhase = (state) => ({
 		
 			
 		 console.log("qtimer end for " + state.gameInfo.HotSeat);
+		
 		 if(state.playerSlot == state.gameInfo.HotSeat){
 			  clearInterval(state.questionTimer);
 			 	state.TimersRef.child("Question").update({				 
 					Started: false,
-					Time: "Clearbo"
+					Time: "X"
 			 	})
 				state.GameRef.update({
-				 //QuestionPhase: false,
+				// QuestionPhase: false,
 				 PickPhase: true				 
 			 	})	
 		 }
@@ -506,7 +580,7 @@ const renderPlayerInfo = (state) => ({
 		else{
 			$("#" + playerSpot + " .money").removeClass("debt");
 		}
-		$("#p1chat").text(state.playerinfo[playerSpot].chat);
+		$("#" + playerSpot + "chat").text(state.playerinfo[playerSpot].chat);
 		
 		$("#" + playerSpot + " .money").text("$ " + state.playerinfo[playerSpot].points)
 		$("#" + playerSpot + " .namo").text(state.playerinfo[playerSpot].name)
@@ -542,6 +616,10 @@ const joinGame = (state) => ({
 			if(!state.gameInfo.HotSeat){
 				state.GameRef.update({HotSeat: state.playerSlot});
 			}
+		}).catch(function(){
+			
+			state.questionBoard.text("This Game has been Deleted by HazyRazors" ).removeClass("zoom");
+			
 		})
 		
 	}
@@ -587,7 +665,7 @@ const startGame = (state) => ({
 const buzzGame = (state) => ({
 	buzzGame : () => {
 		 //make sure they havn't buzzed and its the question Phase and temp seat open
-		if(state.notAnswered && state.gameInfo.QuestionPhase && !state.gameInfo.TempSeat){
+		if(state.notAnswered && state.gameInfo.QuestionPhase && !state.gameInfo.TempSeat && state.playerSlot){
 			//flag buzzed and fill temp seat
 			state.notAnswered = false;
 			state.GameRef.update({TempSeat:state.playerSlot});
@@ -615,39 +693,14 @@ const buzzGame = (state) => ({
 //award points and clear answer timer 
 const answerQuestion = (state) => ({
 	answerQuestion : () => {	
-		console.log("answering question");
-			//if correct answer award points and update to player stats
-			if(state.gameInfo.currentAnswer.toLowerCase() == state.answerInput.val().toLowerCase()){
-				
-				state.TimersRef.child("Question").update({
-					 Time: 0					 						
-				 }).then(function(){
-						if(state.gameInfo.HotSeat != state.playerSlot){
-							state.GameRef.update({				
-								HotSeat: state.playerSlot		
-							})
-						}
-				})		
-				
-				var newPoints = state.playerinfo[state.playerSlot].points + (state.gameInfo.currentPoints * 2);
-				
-				state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
-					points: newPoints
-				})		
-	
-			
-			}	
-		else{
-			//end Answer Timer  this is done in endQuestion Phase too
-			state.self.endAnswerTimer();
-			
-			var newPoints = state.playerinfo[state.playerSlot].points - (state.gameInfo.currentPoints * 2);
-				
-				state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
-					points: newPoints
-				})		
-		}				
-	}
+		
+		  if(state.gameInfo.TempSeat == state.playerSlot){
+			console.log("answering question");
+			state.TimersRef.child("Answer").update({
+				 Time: 0					 						
+			 })		
+		}		
+	}		
 })
 //what happens when a player leaves midgame
 const setDisconnect = (state) => ({
@@ -665,16 +718,18 @@ const setDisconnect = (state) => ({
 
 const resetBtn = (state) => ({
 	resetBtn : () => {
-		state.GameRef.update({
-				
-				 QuestionPhase: false,
-				 PickPhase: false,
-					TempSeat: false,
-				HotSeat: false,
-			  Started: false,
-			  totalQuestions: 0
-			 		
-		})
+//		state.GameRef.update({
+//				
+//				 QuestionPhase: false,
+//				 PickPhase: false,
+//					TempSeat: false,
+//				HotSeat: false,
+//			  Started: false,
+//			  totalQuestions: 0
+//			 		
+//		})
+		
+		
 		
 		console.log(state.gameInfo);
 		

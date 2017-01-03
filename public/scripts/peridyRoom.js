@@ -21,6 +21,7 @@ const Perildy = (self) =>{
 			playerSlots : $("#playerSlots"),
 			questionBoard : $("#questionBoard"),
 			questionBoardText : $("#questionBoard p"),
+			trebekChat : $("#trebekChat"),
 			//client info vars
 			gameName : window.location.hash.substr(1),
 			refList : ["Players", "Timers", "Category", "Game"],
@@ -40,7 +41,7 @@ const Perildy = (self) =>{
 				TempSeat: false,
 				currentQuestion: "",
 				currentAnswer: "",
-				currentPoints: 0,
+				currentValue: 0,
 				questionsLeft: null
 			},
 			
@@ -208,29 +209,28 @@ const createGameBoard = (state) => ({
 		state.CategoryRef.once("value", function(data){
 			var cats = data.val();				
 			
-			for(var i in cats ){			
+			for(var i in cats){			
 				
 				var title = $("<div>", {
 					text: cats[i].Name,
 					class: "cluetitle"
 				})
 				
-			//	$("#" + id).addClass("picked");
-				
 				state.gameBoard.append(title);
-				for(var clue = 1; clue <= 5; clue++){
+				for(var clueNum = 0; clueNum <= 4; clueNum++){
 					var done = " unpicked";
-					var points = (clue * 100) * 2;
-					if(cats[i]["c" + clue + "00"].done){
+					var points = cats[i]["c" + clueNum].Points;
+					//var points = (clue * 100) * 2;
+					if(cats[i]["c" + clueNum].done){
 						done = " picked";
 					}
 					
 					var qDiv = $("<div>",{
 					text: points,
-					class: "clues c" + clue + "00" + done,
+					class: "clues" + done,
 					datarow: i,
-					datacol: clue + "00",
-					id: i + clue + '00'
+					datacol: clueNum,
+					id: i + clueNum
 				})
 					state.gameBoard.append(qDiv);
 				}				
@@ -283,22 +283,21 @@ const createGameBoard = (state) => ({
 
 const updateGameBoard = (state) => ({
 	updateGameBoard : () => {
-		state.CategoryRef.on("child_added", updateInfo);
+		//state.CategoryRef.on("child_added", updateInfo);
 		state.CategoryRef.on("child_changed", updateInfo);	
 		
 		function updateInfo(snap){
-			console.log(state.gameInfo);
+			var serverInfo = snap.val();
+			var key = snap.key;
+			
 			if(state.gameInfo.QuestionPhase){
 				var qInfo = state.gameInfo.QuestionPhase;
-				var points = qInfo.substr(6);
-				var id = qInfo.substr(0,4) + points;
+//				var points = qInfo.substr(6);
+//				var id = qInfo.substr(0,4) + points;
 				
-				$("#" + id).removeClass("unpicked");
-				$("#" + id).addClass("picked");
-			}
-			
-			
-			
+				$("#" + qInfo).removeClass("unpicked");
+				$("#" + qInfo).addClass("picked");
+			}			
 		}
 		
 	}
@@ -319,6 +318,7 @@ const updateGameInfo = (state) => ({
 				case "Started": 
 					state.gameInfo.Started = serverInfo;
 					if(serverInfo){
+						state.questionBoard.addClass("zoom");
 						state.startGameBtn.hide();
 					}
 					else{
@@ -327,7 +327,10 @@ const updateGameInfo = (state) => ({
 					break;
 				case "PickPhase":
 					state.gameInfo.PickPhase = serverInfo;
-					
+					if(state.gameInfo.HotSeat){
+						state.trebekChat.text("TerbekBot: " + state.playerinfo[state.gameInfo.HotSeat].name + "Please choose a Category");
+					}
+					state.trebekChat.text("TerbekBot: Someone join the Game! and pick a category");
 					break;
 				case "HotSeat":
 					state.gameInfo.HotSeat = serverInfo;
@@ -348,28 +351,32 @@ const updateGameInfo = (state) => ({
 					break;
 				case "QuestionPhase":
 					state.gameInfo.QuestionPhase = serverInfo;
-					if(state.gameInfo.QuestionPhase){
+					if(state.gameInfo.QuestionPhase && state.gameInfo.Started){
 						state.questionBoard.removeClass("zoom");						
-						state.self.updateCurrentQuestion(state.gameInfo.QuestionPhase);
+//						state.self.updateCurrentQuestion(state.gameInfo.QuestionPhase);
 						state.questionBoardText.text(state.gameInfo.currentQuestion);
-						state.buzzerBtn.show();		
-		
-					}
-					else {
+						state.buzzerBtn.show();				
+					}					
+					
+					else if(state.gameInfo.Started) {
 						state.buzzerBtn.hide();						
 						state.questionBoard.addClass("zoom");
 						state.self.endQuestionPhase();
-					}
-					
+					}				
 				
 					break;
-			}				
-			
-//												
-//			if(state.playerSlot){
-//				state.self.setDisconnect(state.playerSlot);			}			
+				case "CurrentQuestion":
+					state.gameInfo.currentQuestion = serverInfo;
+					break;
+				case "CurrentAnswer":
+					state.gameInfo.currentAnswer = serverInfo;
+					break;
+				case "CurrentValue":
+					state.gameInfo.currentValue = serverInfo;
+					break;
+			}					
 			 
-			console.log('changed ' + snap.key + " to " + state.gameInfo[snap.key]);
+			//console.log('changed ' + snap.key + " to " + state.gameInfo[snap.key]);
 		}	
 	}	
 })
@@ -410,42 +417,58 @@ const updateTimer = (state) => ({
 })
 
 const endAnswerTimer = (state) => ({
-	endAnswerTimer: ()=>{
+	endAnswerTimer: ()=>{		
 		
-		console.log("ending timer for ", state.playerSlot, state.gameInfo.TempSeat);
-		
+		  //check if you are owner of the answer timer
 			if(state.playerSlot && state.gameInfo.TempSeat == state.playerSlot){
 				
-				state.PlayersRef.child("PlayerInfo/" + state.playerSlot)
-					.update({
-						chat:"What is " + state.answerInput.val()
-								 })
-				  
+					clearInterval(state.answerTimer);
 				
+					state.GameRef.update({TempSeat:false});
+				
+					state.TimersRef.child("Answer").update({
+						Started: false,
+						Time: "X"
+					});	
+				
+					state.PlayersRef.child("PlayerInfo/" + state.playerSlot)
+						.update({
+							chat:"What is " + state.answerInput.val()
+									 })
+				  
+				//check if the answer is correct
 				if(state.gameInfo.currentAnswer.toLowerCase() == state.answerInput.val().toLowerCase()){
-
+					//reset the question timer
 					state.TimersRef.child("Question").update({
 						 Time: 0					 						
-					 }).then(function(){
+					 })
+						//then update the hotseat
+						.then(function(){
 							if(state.gameInfo.HotSeat != state.playerSlot){
 								state.GameRef.update({				
 									HotSeat: state.playerSlot		
 								})
 							}
 					})		
-
-					var newPoints = state.playerinfo[state.playerSlot].points + (state.gameInfo.currentPoints * 2);
-
+					//calculate new points
+				
+					var newPoints = (state.playerinfo[state.playerSlot].points) + (state.gameInfo.currentValue);
+					//update them to player stats
 					state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
 						points: newPoints
 					})		
 
-
 				}	
 				else{		
-
-
-						var newPoints = state.playerinfo[state.playerSlot].points - (state.gameInfo.currentPoints * 2);
+					
+						clearInterval(state.answerTimer);
+							state.GameRef.update({TempSeat:false});
+							state.TimersRef.child("Answer").update({
+								Started: false,
+								Time: "X"
+						});	
+					
+						var newPoints = (state.playerinfo[state.playerSlot].points) - (state.gameInfo.currentValue);
 
 						state.PlayersRef.child("PlayerInfo/" + state.playerSlot).update({
 							points: newPoints
@@ -455,26 +478,35 @@ const endAnswerTimer = (state) => ({
 		state.answerInput.val("");
 		//if user is in the tempseat clear it and the timer
 	
-			clearInterval(state.answerTimer);
-			state.GameRef.update({TempSeat:false});
-			state.TimersRef.child("Answer").update({
-				Started: false,
-				Time: "X"
-			});	
+		
 		}							
 	}
 })
 
 //action when question picked start timer on hotseats client
 const pickQuestion = (state) =>({
-	pickQuestion: (row, col) =>{
+	pickQuestion: (row, col, cid) =>{
 		//console.log(row + " " + col);
 		var qInfo = row + "/c" + col;
+		
 		var startTime = 15;																		
 		//trigger Question Phase for everyone
-		state.GameRef.update(
-			{QuestionPhase: qInfo}
-		)
+		
+		
+		//lets try updating question game data instead
+		var qData = {QuestionPhase: cid};
+		
+		state.CategoryRef.child(qInfo).once("value", function(snap){
+			var catsInfo = snap.val();
+			console.log(catsInfo);
+			qData.CurrentAnswer = catsInfo.Answer;
+			qData.CurrentQuestion = catsInfo.Clue;
+			qData.CurrentValue = catsInfo.Points;
+		});	
+		
+		state.GameRef.update(qData);
+		
+		
 		//trigger update board for evryone
 		state.CategoryRef.child(qInfo).update(
 			{ done:true }
@@ -504,21 +536,20 @@ const updateCurrentQuestion = (state) => ({
 		//state.self.updateGameBoard(id);
 	
 		
-		state.CategoryRef.child(qInfo).once("value", function(snap){
-			var catsInfo = snap.val();
-			console.log(catsInfo);
-			state.gameInfo.currentAnswer = catsInfo.Answer;
-			state.gameInfo.currentQuestion = catsInfo.Clue;
-			state.gameInfo.currentPoints = parseInt(points);
-		});	
+	
 	}
 	
 })
 
 const endQuestionPhase = (state) => ({
 	endQuestionPhase : () => {
-		
-			
+		 if(state.gameInfo.currentAnswer){
+			 state.trebekChat.text("TrebekBot: The answer was " + state.gameInfo.currentAnswer);
+			 setTimeout(function(){
+				 state.trebekChat.text("TrebekBot: Please pick a peril");	
+			 }, 4000)			 
+		 }
+		 
 		 console.log("qtimer end for " + state.gameInfo.HotSeat);
 		
 		 if(state.playerSlot == state.gameInfo.HotSeat){
@@ -583,8 +614,7 @@ const renderPlayerInfo = (state) => ({
 		$("#" + playerSpot + "chat").text(state.playerinfo[playerSpot].chat);
 		
 		$("#" + playerSpot + " .money").text("$ " + state.playerinfo[playerSpot].points)
-		$("#" + playerSpot + " .namo").text(state.playerinfo[playerSpot].name)
-		
+		$("#" + playerSpot + " .namo").text(state.playerinfo[playerSpot].name)		
 	
 	}	
 })
@@ -618,7 +648,7 @@ const joinGame = (state) => ({
 			}
 		}).catch(function(){
 			
-			state.questionBoard.text("This Game has been Deleted by HazyRazors" ).removeClass("zoom");
+			state.questionBoardText.text("This Game has been Deleted by HazyRazors" ).removeClass("zoom");
 			
 		})
 		
@@ -668,6 +698,7 @@ const buzzGame = (state) => ({
 		if(state.notAnswered && state.gameInfo.QuestionPhase && !state.gameInfo.TempSeat && state.playerSlot){
 			//flag buzzed and fill temp seat
 			state.notAnswered = false;
+			state.buzzerBtn.hide();	
 			state.GameRef.update({TempSeat:state.playerSlot});
 			//start timer to 5 seconds and trigger Firebase		
 			var startTime = 5;

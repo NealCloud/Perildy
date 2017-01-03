@@ -52,7 +52,10 @@ var roomData = {
 				"TempSeat" : false,
 				"PickPhase": false,
 				"QuestionPhase": false,
-				"totalQuestions": 0
+				"totalQuestions": 0,
+				"CurrentQuestion": false,
+				"CurrentAnswer": false,
+				"CurrentValue": 0
 			}		
 
 			

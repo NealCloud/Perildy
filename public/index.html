@@ -15,7 +15,7 @@
 				text-decoration: none;
       }
 
-      #message {
+      #mainDisplay {
         max-width: 400px;
         margin: 40px auto;
         box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2),0 1px 1px 0 rgba(0,0,0,0.14),0 2px 1px -1px rgba(0,0,0,0.12);
@@ -24,26 +24,26 @@
         padding: 16px 24px;
       }
 
-      #message h1 {
+      #mainDisplay h1 {
         font-size: 22px;
         font-weight: 500;
         text-align: center;
         margin: 0 0 16px;
       }
 
-      #message p {
+      #mainDisplay p {
         font-weight: 300;
         line-height: 150%;
       }
 
-      #message ul {
+      #mainDisplay ul {
         list-style: none;
         margin: 16px 0 0;
         padding: 0;
         text-align: center;
       }
 
-      #message li{        
+      #mainDisplay li{        
         padding: 8px;
         text-transform: uppercase;
         
@@ -71,7 +71,7 @@
     </style>
   </head>
   <body>
-    <div id="message">
+    <div id="mainDisplay">
       <h1>Welcome Perildy</h1>
 			<p>Join a Game or create one</p>
      <ul id="gameSlots">				
@@ -80,26 +80,27 @@
      </div>
 		
 		<button id="signIn">
-			Sing In!
+			Sign In!
 		</button>
 		<button id="signOut">
-			Sing Out!
+			Sign Out!
 		</button>
-		<button id="jservice">
-			j servicer!
+		<button id="createBtn">
+			Create Game
 		</button>
 		<button id="testBtn">
 			test 
 		</button>
+<!--
 		<form id="image-form" action="#">
             <input id="mediaCapture" type="file" accept="all/*">
             <button id="submitImage" title="Add an image" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-color--amber-400 mdl-color-text--white">
               <i class="material-icons">image</i>
             </button>
           </form>
-		<a id='downloadAnchorElem'>yololo</a>
+-->
+<!--		<a id='downloadAnchorElem'>downloadJson</a>		-->
 		
-		<a href="perody.html#perod">game1</a>
 <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 <script>
   // Initialize Firebase

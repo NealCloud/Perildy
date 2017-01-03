@@ -197,7 +197,7 @@
 				top: 100px;
 			}
 			
-			.chat, .chatMid{				
+			.chat, .chatMid, #trebekChat{				
 /*				//position: relative;*/
 				padding: 15px;				
 				color: #000;
@@ -226,16 +226,28 @@
 				position: absolute;
 				bottom: -15px;
 				left: 15px;
-				border-width: 15px 5px 0;
+				border-width: 15px 5px 5px 5px;
 				border-style: solid;
 				border-color: #f3961c transparent;
 				display: block;
 				width: 0;
 		}
 			
-			#Player1chat, #Player3chat, #Player2chat{
+			#Player1chat, #Player3chat, #Player2chat {
 				position: absolute;
 				top: -80px;
+				
+			}
+			
+			#trebekChat{
+				background-color: aqua;
+				position: absolute;
+				top: -200px;
+				padding: 15px;				
+				color: #000;				
+				border-radius: 10px;
+				width: 200px;
+				height: 100px;
 				
 			}
 			#Player1chat{
@@ -255,7 +267,7 @@
       
       <div id="gameBoard"></div>
 			<div id="questionBoard">
-			 <p>Game Not Ready</p>
+			 <p>Game Not Started Yet, join by clicking a box and hit start</p>
 				<img src="https://www.google.com/images/spin-32.gif">
 			</div>
       
@@ -287,7 +299,7 @@
 						<div id="timerBox"></div>					
 					<div id="timerBox2"></div>	
 		<form class="gameForm">
-			
+			  <p id='trebekChat' >TrebekBot: Start the Game when your ready</p>
 				<input type="text" id="answerInput">		
 				<input  type="submit" value="answer" id="answerBtn" class="gameBtn">
 				<button class="gameBtn" id="startGame">

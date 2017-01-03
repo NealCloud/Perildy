@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Perildy</title>
+		<link href="https://fonts.googleapis.com/css?family=Caveat|Waiting+for+the+Sunrise|Zeyada" rel="stylesheet">
+    <style media="screen">
+			*{
+				box-sizing: border-box;
+			}
+			
+      body {
+        font-family: Roboto, Arial, sans-serif;
+        background: #ECEFF1;
+        color: rgba(0,0,0,0.87);
+      }
+
+      a {
+        color: rgb(3,155,229);
+      }
+
+      #message {       
+				height: 450px;
+        position: relative;
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2),0 1px 1px 0 rgba(0,0,0,0.14),0 2px 1px -1px rgba(0,0,0,0.12);
+        border-radius: 2px;
+        background: white;
+        padding: 16px 24px;
+      }
+
+      #message h1 {
+        font-size: 22px;
+        font-weight: 500;
+        text-align: center;
+        margin: 0 0 16px;
+      }
+
+      #message p {
+        font-weight: 300;
+        line-height: 150%;
+      }
+
+      #playerSlots ul {
+        list-style: none;
+        margin: 16px 0 0;
+        padding: 0;        
+				width: 100%;
+				position: relative;				
+      }
+
+      #playerSlots li{
+        display: inline-block;
+				position: relative;
+        padding: 10px;
+        text-transform: uppercase;
+        text-decoration: none;
+				
+        background: rgb(3,155,229);
+        color: white;
+        width: 225px;
+				height: 150px;
+        border-radius: 10px;       
+        box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
+      }
+			
+			#gameBoard{
+					display: flex;
+					flex-flow: column wrap;
+					justify-content: flex-start;
+					position: absolute;
+					top: 0;
+					left: 0;					
+					height: 450px;			
+			}
+			#playerSlots{
+			
+			}
+			
+			.clues{
+				height: 75px;
+				width: 75px;
+				color: yellow;
+				border: 1px solid black;
+				text-align: center;
+				line-height: 75px;
+			}
+			.cluetitle{
+				height: 75px;
+				width: 75px;
+				border: 2px solid black;
+				text-align: center;				
+			}
+			#timerBox{
+				position: absolute;
+				display: inline-block;
+				border: 2px solid black;
+				width: 50px;
+				height: 50px;
+				left: 10px;
+				top: 30px;
+				color: black;
+				
+			}
+						
+	
+	
+	
+			
+    </style>
+  </head>
+  <body>		
+    <div id="message">
+      
+     
+		</div>
+	
+		<script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyAdS8e1IHddcg4bysP-kdy180ofxAtwFNM",
+    authDomain: "perildy.firebaseapp.com",
+    databaseURL: "https://perildy.firebaseio.com",
+    storageBucket: "perildy.appspot.com",
+    messagingSenderId: "51700319683"
+  };
+  firebase.initializeApp(config);
+</script>
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+		<script src="scripts/firebaseUtils.js"></script>
+		<script src="scripts/qcreate.js"></script>
+  </body>
+</html>

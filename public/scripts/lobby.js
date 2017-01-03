@@ -5,10 +5,11 @@ const Lobby = (self) =>{
 			signOutBtn : $("#signOut"),			
 			fileLoader :$("#mediaCapture"),
 			jservice : $("#jservice"),
-			gameList : $("#message"),
+			mainDisplay : $("#mainDisplay"),
 			deleteBtn: $(".deleteGame"),
 			gameSlots: $("#gameSlots"),
 			testBtn: $("#testBtn"),
+			createGameBtn: $("#createBtn"),
 			//client info vars		
 			refList : ["Files", "Games"],
 			notRendered : true,	
@@ -24,7 +25,6 @@ const Lobby = (self) =>{
 					.then(() => console.log('firebase started'))
 					.catch((e) => console.log(e))
 			}
-			
 		}
 	
 		//event handlers
@@ -37,12 +37,12 @@ const Lobby = (self) =>{
 				state.self.signOut();
 		})
 		
-			state.gameList.on("click", ".deleteGame", function(e){
+			state.mainDisplay.on("click", ".deleteGame", function(e){
 				console.log("wat the heck");
 				state.self.deleteGame($(this));
 		})
 			
-			state.jservice.on("click", function(e){
+			state.createGameBtn.on("click", function(e){				
 				state.self.createGame();
 		})
 			
@@ -54,7 +54,8 @@ const Lobby = (self) =>{
 			console.log("chango");
 			state.self.saveImageMessage(e);
 		})
-	
+	  
+		
 		//return the final object with all its composition methods attached
 		return Object.assign(
 			
@@ -85,6 +86,9 @@ const onSignOut = (state) => ({
 		console.log("signed out :(")
 		state.signInBtn.show();
 		state.signOutBtn.hide();
+		state.mainDisplay.hide();
+		state.createGameBtn.hide();
+	  state.testBtn.hide();
 	}
 });
 //this can trigger periodicly even when no auth has changed be Ready
@@ -97,6 +101,9 @@ const onSignIn = (state) => ({
 		
 		state.signOutBtn.show();
 		state.signInBtn.hide();
+		state.mainDisplay.show();
+		state.createGameBtn.show();
+	  state.testBtn.show();
 		//check if already in player slot and reassign disconnect
 		
 		//check if game was rendered already
@@ -124,7 +131,7 @@ const loadGame = (state) => ({
 				class: "gameItem",
 				html: "<a href='perody.html#" + snap.key + "'>" + snap.key + "'s Game</a><span class='deleteGame' datakey='" + snap.key + "' >X</span>"
 			})
-			state.gameList.append(newGame);
+			state.mainDisplay.append(newGame);
 		}
 		
 		function removeGame(snap){			
@@ -138,24 +145,20 @@ const loadGame = (state) => ({
 
 const createGame = (state) => ({
 	createGame : () => {
+		
 		var name = state.userName.replace(' ', '');
 		if(name in state.gamesList){
 			if(state.gamesList[name]){
 					console.log("game already made");
-					return
-			}		
+					return;
+			}
 		}
-		else{
-			state.self.getQuestions();
-		}
+		state.self.getQuestions();
 	}
-	
 })
 
 const getQuestions = (state) => ({
 	getQuestions : () => {	
-	
-		
 		
 		console.log("created Game Room");
 		
@@ -182,23 +185,37 @@ const getQuestions = (state) => ({
 //                $("#message").append(field.answer + " ");
 //            });
 //        });
-		  var perildyQ = "";
-		  $.getJSON("http://jservice.io/api/category", {id: 10044}, function(result){
-				    console.log(result, dummyData);
-					
-				    perildyQ = result;
-//            $.each(result, function(i, field){
-//							console.log(i, field);
-//                $("#message").append(field.answer + " ");
-//            });
-        });
+		
+//		  var perildyQ = "";
+//		  $.getJSON("http://jservice.io/api/category", {id: 10044}, function(result){
+//				    console.log(result, dummyData);
+//					
+//				    perildyQ = result;
+//
+//        });
+		
+		
+//		var xhttp;
+//		xhttp=new XMLHttpRequest();
+//		xhttp.onreadystatechange = function() {
+//			if (this.readyState == 4 && this.status == 200) {
+//				console.log(JSON.parse(this.responseText));
+//			}
+//	 	};
+//		xhttp.open("GET", "http://jservice.io/api/random/?count=1", true);
+//		xhttp.send();
+		
 		//gotten from param
 		var newData = {Category: {}};
 		Object.assign(newData, roomData.emptyRoom);	
 		console.log(newData);
 	
 		state.self.createGameJson(newData, "Literacy", 1, dummyData);
+		state.self.createGameJson(newData, "Literacy", 2, dummyData);
+		
+		//object to update server data
 		var updateObj = {};
+		//tie to users name
 		updateObj[state.userName] = newData;
 		
 		
@@ -207,11 +224,12 @@ const getQuestions = (state) => ({
 		
 	}
 })
+
+//creates a category
 const createGameJson = (state) => ({
 	createGameJson : (catObj, catName, catCol, catData) => {		 
 		
-		var pointData = [100, 200, 300, 400, 500];
-		
+		var pointData = [1, 2, 3, 4, 5];		
 		
 		var len = catData.length;
 		
@@ -224,7 +242,8 @@ const createGameJson = (state) => ({
 		catObj.Category['cat' + catCol] = {Name: catName};
 		
 		for(let i = len - 5, b = 0; i < len; i++, b++){			
-			catObj.Category['cat' + catCol]["c" + pointData[b]] = {
+			catObj.Category['cat' + catCol]["c" + b] = {
+				Points: catData[i].value,
 				Clue: catData[i].question, 
 				Answer: catData[i].answer.replace(/<\/?i[^>]*>/g,"").replace(/\W+/g, " ").trim(),
 				done: false

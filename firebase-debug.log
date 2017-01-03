@@ -1,9 +1,9 @@
 [debug] ----------------------------------------------------------------------
 [debug] Command:      C:\Program Files\nodejs\node.exe C:\Users\Zolo\AppData\Roaming\npm\node_modules\firebase-tools\bin\firebase serve
-[debug] CLI Version:  3.2.0
+[debug] CLI Version:  3.2.1
 [debug] Platform:     win32
 [debug] Node Version: v6.9.1
-[debug] Time:         Wed Dec 21 2016 11:52:44 GMT-0800 (Pacific Standard Time)
+[debug] Time:         Mon Jan 02 2017 17:04:09 GMT-0800 (Pacific Standard Time)
 [debug] ----------------------------------------------------------------------
 [debug] 
 [info] Starting Firebase development server...

@@ -13,6 +13,8 @@ const Lobby = (self) =>{
 			createGameDiv: $("#gameCreate"),
 			randomCatBtn: $("#randomCatBtn"),
 			snackbarDiv: $("#snackbar"),
+			loginChoice: $("#loginChoice"),
+			googleSignIn: $("#googleSignIn"),
 			//client info vars		
 			refList : ["Files", "Games", "Categories", "Questions"],
 			notRendered : true,	
@@ -31,6 +33,8 @@ const Lobby = (self) =>{
 				state.self.initFirebase( state.self.onSignIn, state.self.onSignOut)				  
 					.then(() => console.log('firebase started'))
 					.catch((e) => console.log(e))
+				
+				
 			}
 		}
 	  //hide certain elements at start
@@ -39,15 +43,74 @@ const Lobby = (self) =>{
 		//event handlers
 	  //allow if signed out
 		state.signInBtn.on("click", function(e){
-				state.self.signIn('google', state.self.bugo);
+			  state.self.snackbar("signing in");
+				state.self.openModal("#loginChoice");
+//				state.self.signIn('google', state.self.bugo);
 		})
 		//allow if signed in
 		state.signOutBtn.on("click", function(e){
 				state.self.signOut();
 		})
 		
+		$('body').on("click","#googleSignIn", function(e){			
+				state.self.signIn("google");
+			  state.self.closeModal("#loginChoice");
+		})
+		
+		$('body').on("click","#perilSignIn", function(e){
+				state.self.closeModal("#loginChoice");
+				state.self.openModal("#loginPeril");
+			  
+		})
+		
+		$('body').on("click","#perilCreate", function(e){
+				state.self.closeModal("#loginChoice");
+				state.self.openModal("#loginCreate");
+			  
+		})
+//		
+		$('body').on("click","#createPeril", function(e){
+			  
+				e.preventDefault();			  
+				var $inputs = $('#createForm :input');
+
+			// not sure if you wanted this, but I thought I'd add it.
+			// get an associative array of just the values.
+				var values = {};
+				$inputs.each(function() {
+						values[this.name] = $(this).val();
+				});				
+			
+							
+			  state.self.createLogin(values.usrname, values.psw, function(){
+					state.self.closeModal("#loginCreate");
+				});
+		})			
+		
+		
+		$('body').on("click", "#loginPerilBtn", function(e){
+			  
+				e.preventDefault();			  
+				var $inputs = $('#loginForm :input');
+
+			// not sure if you wanted this, but I thought I'd add it.
+			// get an associative array of just the values.
+				var values = {};
+				$inputs.each(function() {
+						values[this.name] = $(this).val();
+				});			
+							
+			
+			  state.self.accountLogin(values.usrname, values.psw, function(){
+					state.self.closeModal("#loginPeril");
+				});
+		})			
+		
+
+		
 			state.mainDisplay.on("click", ".deleteGame", function(e){
 				
+						
 				state.self.deleteGame($(this));
 		})
 			
@@ -83,6 +146,8 @@ const Lobby = (self) =>{
 			fireStuff.signIn(state),
 			fireStuff.signOut(state),
 			fireStuff.createRefs(state),
+			fireStuff.createLogin(state),
+			fireStuff.accountLogin(state),
 			//game state methods
 			onSignIn(state),
 			onSignOut(state),
@@ -99,6 +164,8 @@ const Lobby = (self) =>{
 			//utility methods
 			pageStuff.snackbar(state),
 			pageStuff.bugo(state),
+			pageStuff.openModal(state),
+			pageStuff.closeModal(state),
 			testMode(state)		
 			
 		)
@@ -118,9 +185,16 @@ const onSignOut = (state) => ({
 const onSignIn = (state) => ({
 	onSignIn : () => {	
 		state.self.snackbar('you are signed in!');
+		console.log(state.auth.currentUser);
+		state.userId = state.auth.currentUser.uid;	
 		
-		state.userId = state.auth.currentUser.uid;		
-		state.userName = state.auth.currentUser.displayName;
+		if(state.auth.currentUser.providerData["0"].providerId == "password"){
+			var name = /([^@]+)/.exec(state.auth.currentUser.email);
+			state.userName = name[0];		
+		}else{
+			state.userName = state.auth.currentUser.displayName;
+		}
+		
 		
 		state.signOutBtn.show();
 		state.signInBtn.hide();
@@ -381,6 +455,7 @@ const curryMaster = (state) => ({
 })
 
 $(document).ready(function(){
+	w3IncludeHTML();
 	window.theLobby = Lobby();
 	theLobby.init(theLobby);
 })

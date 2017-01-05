@@ -60,6 +60,51 @@ var fireStuff = {};
 			
 		 }
 	}),
+		createLogin : (state) => ({
+			createLogin : (email, password, callback) =>{
+				if(email && password && callback){
+					firebase.auth().createUserWithEmailAndPassword(email, password)
+					.then(function(){
+						state.self.snackbar("user successfully created!");
+						callback();
+					})					
+					.catch(function(error) {
+					// Handle Errors here.
+					var errorCode = error.code;
+					var errorMessage = error.message;
+					console.log(errorCode);
+					state.self.snackbar(errorMessage);
+				});
+				}	
+				else{					
+					state.self.snackbar("no info given!");
+				}
+				
+			}			
+		}),
+		
+			accountLogin : (state) => ({
+			accountLogin : (email, password, callback) =>{
+				if(email && password && callback){
+					firebase.auth().signInWithEmailAndPassword(email, password)
+					.then(function(){
+						state.self.snackbar("you login!");
+						callback();
+					})					
+					.catch(function(error) {
+					// Handle Errors here.
+					var errorCode = error.code;
+					var errorMessage = error.message;
+					console.log(errorCode);
+					state.self.snackbar(errorMessage);
+				});
+				}	
+				else{
+					console.log("false name attempted");
+				}
+				
+			}			
+		}),
 		//create database refs
 		createRefs : (state) => ({
 			createRefs : (refs, prefix) =>{

@@ -100,7 +100,10 @@ const Perildy = (self) =>{
 			if(state.playerSlot && !state.gameInfo.Started){
 				state.startGameBtn.hide();
 				state.self.startGame();				
-			}			
+			}	
+			else{
+				state.self.snackbar("you must join the game first");
+			}
 				
 		})
 		//allow if game is question phase and temp seat open
@@ -182,10 +185,18 @@ const onSignIn = (state) => ({
 	onSignIn : () => {
 		state.self.snackbar("you are signed in!");		
 		
-		state.userId = state.auth.currentUser.uid;		
-		state.userName = state.auth.currentUser.displayName;
+		state.userId = state.auth.currentUser.uid;	
 		
-		state.signOutBtn.show();
+		if(state.auth.currentUser.providerData["0"].providerId == "password"){
+			var name = /([^@]+)/.exec(state.auth.currentUser.email);
+			state.userName = name[0];
+		}else{
+			state.userName = state.auth.currentUser.displayName;
+		}
+		
+		//state.signOutBtn.show();
+		state.signOutBtn.hide();
+		
 		state.signInBtn.hide();
 		//check if already in player slot and reassign disconnect
 		if(state.playerSlot){
@@ -603,6 +614,8 @@ const updatePlayerInfo = (state) => ({
 			tempInfo.points = info.points;
 			tempInfo.id = info.uid;
 			tempInfo.chat = info.chat;
+			
+			
 
 			state.playerinfo[playerSpot] = tempInfo;
 			
@@ -741,39 +754,40 @@ const answerQuestion = (state) => ({
 
 const gameEnd = (state) => ({
 	gameEnd : ()=>{
-		var pointArr = [];
-		for(var i in state.playerinfo){
+		state.self.snackbar("calculating scores");
+   setTimeout(function(){
+		 var pointArr = [];
+		
+		for(let i in state.playerinfo){				
 			pointArr.push(state.playerinfo[i].points);
 		}
-		var winner = Math.max(...arr);
-		
-		var pointArr = [];
-		
-		for(var i in state.playerinfo){
-			console.log(i);
-			pointArr.push(state.playerinfo[i].points);
-		}
-		var winner = Math.max(...pointArr);
+		var winner = Math.max(...pointArr);		
 		var winnerArr = [];
 
-		for(var k in pinfo){
-			if(pinfo[k].points == winner){
+		for(let k in state.playerinfo){
+			if(state.playerinfo[k].points == winner){
 				winnerArr.push(state.playerinfo[k].name); 
 			}
 		}
 		var wintext= "";
 		
-		if(winnerArr > 1){
-			for(var i = 0; i < winnerArr.length; i++){
-				wintext += winnerArr[i] + " "; 
+		if(winnerArr.length > 1){
+			for(let i = 0; i < winnerArr.length; i++){
+				wintext += winnerArr[i] + ", "; 
 			}
-			wintext += "have all tied what a game!";
+			wintext += "have all tied what close a game you all lose!";
 		}
 		else{
-			wintext = winnerArr[0] + "HAS WON THE MATCH!! now please leave";
+			wintext = winnerArr[0] + " HAS WON THE MATCH!! now please leave";
 		}
 		
-		state.questionBoardText.text(wintext).removeClass("zoom");
+		
+		state.questionBoardText.text(wintext)
+		state.questionBoard.removeClass("zoom");	
+		 
+	 },2000)
+		
+		
 	}	
 })
 
@@ -794,7 +808,8 @@ const setDisconnect = (state) => ({
 
 const gameError = (state) => ({
 	gameError : ()=>{
-		state.questionBoardText.text("Sorry This Game has been Deleted by a Marlon" ).removeClass("zoom");
+		state.questionBoardText.text("Sorry This Game has been Deleted by a Marlon" )
+		state.questionBoard.removeClass("zoom");	
 	}	
 })
 
@@ -812,8 +827,8 @@ const resetBtn = (state) => ({
 //			 		
 //		})
 	
-		console.log(state.gameInfo, state.playerinfo);
-		
+		//console.log(state.gameInfo, state.playerinfo);
+		state.self.snackbar("sorry I can't allow that");
 	}
 });
 

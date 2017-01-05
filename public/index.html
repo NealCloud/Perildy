@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8">
     <title>Welcome to Perildy</title>
+		<link href="style/w3.css" rel="stylesheet">
     <link href="style/main.css" rel="stylesheet">
+	
   </head>
   <body>
     <div id="mainDisplay">
@@ -15,7 +17,7 @@
      </div>
 		
 		<div id="gameCreate">
-      <h1>Hello</h1>
+      <h1>Create your Game here</h1>
      <button id="randomCatBtn">
 			Add random category
 		</button>
@@ -43,6 +45,10 @@
 -->
 <!--		<a id='downloadAnchorElem'>downloadJson</a>		-->
 		<div id="snackbar"></div>
+
+<div w3-include-HTML="templates/loginChoice.html"></div>
+  <div w3-include-HTML="templates/loginCreate.html"></div>
+		<div w3-include-HTML="templates/loginPeril.html"></div>
 <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 <script>
   // Initialize Firebase
@@ -55,7 +61,7 @@
   };
   firebase.initializeApp(config);
 </script>
-		
+			<script src="scripts/w3util.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 		<script src="scripts/roomData.js"></script>
 		<script src="scripts/pageUtils.js"></script>

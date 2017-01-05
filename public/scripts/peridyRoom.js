@@ -22,6 +22,8 @@ const Perildy = (self) =>{
 			questionBoard : $("#questionBoard"),
 			questionBoardText : $("#questionBoard p"),
 			trebekChat : $("#trebekChat"),
+			unpicked: $(".unpicked"),
+			snackbarDiv: $("#snackbar"),
 			//client info vars
 			gameName : window.location.hash.substr(1),
 			refList : ["Players", "Timers", "Category", "Game"],
@@ -66,6 +68,7 @@ const Perildy = (self) =>{
 	  state.buzzerBtn.hide();
 	  state.answerBtn.hide();
 		state.startGameBtn.hide();
+		state.snackbarDiv.hide();
 		//event handlers
 	  //allow if signed out
 		state.signInBtn.on("click", function(e){
@@ -73,7 +76,7 @@ const Perildy = (self) =>{
 		})
 		//allow if signed in
 		state.signOutBtn.on("click", function(e){
-				state.self.signOut();
+				state.self.signOut();			  
 		})
 		//remove after testing
 		state.joinGameBtn.on("click", function(e){
@@ -84,8 +87,12 @@ const Perildy = (self) =>{
 		})
 		//allow at any time
 		state.playerSlots.on("click", ".playerStand", function(e){
-			var playerspot = $(this).attr("id");
-			state.self.joinGame(playerspot);
+			if(!state.playerSlot){
+				var playerspot = $(this).attr("id");			
+				state.self.joinGame(playerspot);
+			}
+			
+			
 		})
 		//allow if game has not started yet
 		state.startGameBtn.on("click", function(e){
@@ -117,7 +124,7 @@ const Perildy = (self) =>{
 				  state.answerInput.val("");
 			}
 			else{			
-				console.log("no answer allowed for you")
+				state.self.snackbar("you have not joined the game yet");
 			}			
 		})
 		
@@ -155,22 +162,25 @@ const Perildy = (self) =>{
 			endAnswerTimer(state),
 			updateCurrentQuestion(state),
 			updateGameBoard(state),
+			gameError(state),
+			gameEnd(state),
 			//utility methods
-			bugo(state)
+			pageStuff.snackbar(state),
+			pageStuff.bugo(state)			
 		)
 }
 //mandatory signIn / signOut functions triggered on Auth Change
 const onSignOut = (state) => ({
 	onSignOut : () => {
-		console.log("signed out :(")
+		state.self.snackbar("you are signed out! :(");		
 		state.signInBtn.show();
 		state.signOutBtn.hide();
 	}
 });
 //this can trigger periodicly even when no auth has changed be Ready
 const onSignIn = (state) => ({
-	onSignIn : () => {	
-		console.log('signed in!');
+	onSignIn : () => {
+		state.self.snackbar("you are signed in!");		
 		
 		state.userId = state.auth.currentUser.uid;		
 		state.userName = state.auth.currentUser.displayName;
@@ -237,34 +247,34 @@ const createGameBoard = (state) => ({
 				
 			}
 			//set the question amount
-			state.gameInfo.questionsLeft = $(".unpicked").length;
+			//state.gameInfo.questionsLeft = $(".unpicked").length;
 		
 			//set click event for all questions
-			state.gameBoard.on("click", ".clues", function(e){
-				 
-					 //console.log($(this).hasClass("clues"));				   
-				   var board = $(this);
+			state.gameBoard.on("click", ".clues", function(e){				 
+								   
+				   var board = $(this);				
 					 var row = board.attr('datarow');
 				   var col = board.attr('datacol');
-				 	 var divID = board.attr('id');
-				 //TODO: has unpicked class
+				 	 var divID = board.attr('id');				 
 				   var picked = board.hasClass("unpicked");
+				
 					 if(picked && state.gameInfo.PickPhase && state.playerSlot && state.playerSlot == state.gameInfo.HotSeat && state.gameInfo.Started){
 						 //start Question Timer
 						 //trigger Answer Phase
 						 //end pick Phase
 						 state.gameInfo.questionsLeft -= 1;
 						 state.GameRef.update({
-							 PickPhase: false,
-							 totalQuestions: state.gameInfo.questionsLeft}
-																 );
+							 PickPhase: false
+//							 totalQuestions: state.gameInfo.questionsLeft
+						 });
+						 
 						 state.self.pickQuestion(row, col, divID);						
 					 }
 					 else if(!state.playerSlot){
-						 console.log("please join the game");
+						 state.self.snackbar("click on open square to join");
 					 }
 					else if(state.playerSlot !== state.gameInfo.HotSeat){
-						console.log("you are not in hotseat");
+						state.self.snackbar("you are not in hotseat");
 					}
 				
 				})
@@ -396,7 +406,6 @@ const updateTimer = (state) => ({
 				case "Question":
 					state.timerBox.text(serverInfo.Time);
 					if(serverInfo.Time <= 0 && serverInfo.Started && state.gameInfo.QuestionPhase){
-						console.log("question timer end triggered");
 						//use instead?
 						state.GameRef.update({
 							 QuestionPhase: false
@@ -502,7 +511,7 @@ const pickQuestion = (state) =>({
 			qData.CurrentAnswer = catsInfo.Answer;
 			qData.CurrentQuestion = catsInfo.Clue;
 			qData.CurrentValue = catsInfo.Points;
-		});	
+		}).catch(state.self.gameError);	
 		
 		state.GameRef.update(qData);
 		
@@ -550,7 +559,7 @@ const endQuestionPhase = (state) => ({
 			 }, 4000)			 
 		 }
 		 
-		 console.log("qtimer end for " + state.gameInfo.HotSeat);
+		 //console.log("qtimer end for " + state.gameInfo.HotSeat);
 		
 		 if(state.playerSlot == state.gameInfo.HotSeat){
 			  clearInterval(state.questionTimer);
@@ -567,11 +576,11 @@ const endQuestionPhase = (state) => ({
 		 //end Answer Timer first
 		 state.self.endAnswerTimer();
 		//reset ability to buzz in
-		 state.notAnswered = true;	
-	
-
-			if(state.gameInfo.questionsLeft <= 0 && state.playerSlot == state.gameInfo.HotSeat){
-				 console.log("Its time for final Peridly!!");							
+		 state.notAnswered = true;		
+      
+			if($(".unpicked").length == 0){
+				 console.log("Its time for final Peridly!!");	
+				state.self.gameEnd();
 			}
 					
 		}
@@ -629,28 +638,24 @@ const joinGame = (state) => ({
 			var players = snap.val();			
 			
 			if(state.playerSlot){
-				console.log("sorry you already are " + state.playerSlot);
+				
 			}
 			
 			else if(state.userId == players[playerSpot].uid || !players[playerSpot].uid){
 				state.playerSlot = playerSpot;
 				state.self.setPlayer(playerSpot);
 				state.self.setDisconnect(state.playerSlot);
-				console.log("you are " + playerSpot);
+				state.self.snackbar("you are now " + playerSpot);
 			}
 			else{
-				console.log('that spot is filled')
+				state.self.snackbar('that spot is filled');
 			}
 			
 			
 			if(!state.gameInfo.HotSeat){
 				state.GameRef.update({HotSeat: state.playerSlot});
 			}
-		}).catch(function(){
-			
-			state.questionBoardText.text("This Game has been Deleted by HazyRazors" ).removeClass("zoom");
-			
-		})
+		}).catch(state.self.gameError);
 		
 	}
 	
@@ -669,13 +674,13 @@ const setPlayer = (state) => ({
 const startGame = (state) => ({
 	startGame : () => {
 		if(!state.playerSlot){
-			console.log("please join game first")
+			state.self.snackbar("please join game first");
 			return 
 		}		
 
 		if(state.gameInfo.Started){
 			
-			console.log("game has already started");
+			state.self.snackbar("game has already started");
 		}
 		else{
 			var gameStuff = {
@@ -685,7 +690,7 @@ const startGame = (state) => ({
 			}
 			state.GameRef.update(gameStuff);
 			
-			console.log("starting game");
+			state.self.snackbar("starting game");
 		}		
 			
 	}
@@ -716,6 +721,7 @@ const buzzGame = (state) => ({
 		}
 		//TODO erase after working no cheating
 		else{
+			state.self.snackbar("Someone else buzzed in!");
 			console.log("no buzz allowed", state.gameInfo.currentAnswer, state.gameInfo.currentQuestion);
 		}		
 	}
@@ -725,14 +731,53 @@ const buzzGame = (state) => ({
 const answerQuestion = (state) => ({
 	answerQuestion : () => {	
 		
-		  if(state.gameInfo.TempSeat == state.playerSlot){
-			console.log("answering question");
+		  if(state.gameInfo.TempSeat == state.playerSlot){			
 			state.TimersRef.child("Answer").update({
 				 Time: 0					 						
 			 })		
 		}		
 	}		
 })
+
+const gameEnd = (state) => ({
+	gameEnd : ()=>{
+		var pointArr = [];
+		for(var i in state.playerinfo){
+			pointArr.push(state.playerinfo[i].points);
+		}
+		var winner = Math.max(...arr);
+		
+		var pointArr = [];
+		
+		for(var i in state.playerinfo){
+			console.log(i);
+			pointArr.push(state.playerinfo[i].points);
+		}
+		var winner = Math.max(...pointArr);
+		var winnerArr = [];
+
+		for(var k in pinfo){
+			if(pinfo[k].points == winner){
+				winnerArr.push(state.playerinfo[k].name); 
+			}
+		}
+		var wintext= "";
+		
+		if(winnerArr > 1){
+			for(var i = 0; i < winnerArr.length; i++){
+				wintext += winnerArr[i] + " "; 
+			}
+			wintext += "have all tied what a game!";
+		}
+		else{
+			wintext = winnerArr[0] + "HAS WON THE MATCH!! now please leave";
+		}
+		
+		state.questionBoardText.text(wintext).removeClass("zoom");
+	}	
+})
+
+
 //what happens when a player leaves midgame
 const setDisconnect = (state) => ({
 	setDisconnect : (playerSpot) => {		
@@ -747,8 +792,15 @@ const setDisconnect = (state) => ({
 	}
 })
 
+const gameError = (state) => ({
+	gameError : ()=>{
+		state.questionBoardText.text("Sorry This Game has been Deleted by a Marlon" ).removeClass("zoom");
+	}	
+})
+
 const resetBtn = (state) => ({
 	resetBtn : () => {
+		//clears game refs
 //		state.GameRef.update({
 //				
 //				 QuestionPhase: false,
@@ -759,19 +811,12 @@ const resetBtn = (state) => ({
 //			  totalQuestions: 0
 //			 		
 //		})
-		
-		
-		
-		console.log(state.gameInfo);
+	
+		console.log(state.gameInfo, state.playerinfo);
 		
 	}
 });
 
-const bugo = (state) => ({
-	bugo : (buglog) => {
-		console.log(buglog);
-	}
-});
 
 $(document).ready(function(){
 	window.jepidy = Perildy();

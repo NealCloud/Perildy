@@ -10,10 +10,17 @@ const Lobby = (self) =>{
 			gameSlots: $("#gameSlots"),
 			testBtn: $("#testBtn"),
 			createGameBtn: $("#createBtn"),
+			createGameDiv: $("#gameCreate"),
+			randomCatBtn: $("#randomCatBtn"),
+			snackbarDiv: $("#snackbar"),
 			//client info vars		
-			refList : ["Files", "Games"],
+			refList : ["Files", "Games", "Categories", "Questions"],
 			notRendered : true,	
+			catsLoaded: false,
 			gamesList: {},
+			categoriesList: {},
+			maxCats: 2,
+			catHolder: [],
 			//Server info vars	
 									
 			//must be initialized
@@ -26,7 +33,9 @@ const Lobby = (self) =>{
 					.catch((e) => console.log(e))
 			}
 		}
-	
+	  //hide certain elements at start
+		state.createGameDiv.hide();
+	  state.snackbarDiv.hide();
 		//event handlers
 	  //allow if signed out
 		state.signInBtn.on("click", function(e){
@@ -38,12 +47,20 @@ const Lobby = (self) =>{
 		})
 		
 			state.mainDisplay.on("click", ".deleteGame", function(e){
-				console.log("wat the heck");
+				
 				state.self.deleteGame($(this));
 		})
 			
-			state.createGameBtn.on("click", function(e){				
+			state.createGameBtn.on("click", function(e){
+				
 				state.self.createGame();
+		})
+			
+			state.randomCatBtn.on("click", function(e){
+			  if(state.catHolder.length < state.maxCats){
+					state.self.pickGameCats("");
+				}
+				
 		})
 			
 			state.testBtn.on("click", function(e){
@@ -75,15 +92,21 @@ const Lobby = (self) =>{
 			createGameJson(state),
 			deleteGame(state),
 			createGame(state),
+			loadCats(state),
+			pickGameCats(state),
+			appendCat(state),
+			curryMaster(state),
 			//utility methods
-			testMode(state),
-			bugo(state)
+			pageStuff.snackbar(state),
+			pageStuff.bugo(state),
+			testMode(state)		
+			
 		)
 }
 //mandatory signIn / signOut functions triggered on Auth Change
 const onSignOut = (state) => ({
 	onSignOut : () => {
-		console.log("signed out :(")
+		state.self.snackbar("you are signed out :(")
 		state.signInBtn.show();
 		state.signOutBtn.hide();
 		state.mainDisplay.hide();
@@ -94,7 +117,7 @@ const onSignOut = (state) => ({
 //this can trigger periodicly even when no auth has changed be Ready
 const onSignIn = (state) => ({
 	onSignIn : () => {	
-		console.log('signed in!');
+		state.self.snackbar('you are signed in!');
 		
 		state.userId = state.auth.currentUser.uid;		
 		state.userName = state.auth.currentUser.displayName;
@@ -114,6 +137,9 @@ const onSignIn = (state) => ({
 		}							
 	}
 });
+
+
+
 //load game should only happen once
 const loadGame = (state) => ({
 	loadGame : () => {	
@@ -137,89 +163,133 @@ const loadGame = (state) => ({
 		function removeGame(snap){			
 			noSpaceId = snap.key.replace(' ', '');
 			state.gamesList[noSpaceId] = false;
-			console.log("removing", noSpaceId);
+			state.self.snackbar("someone deleted ", noSpaceId);
 			$("#" + noSpaceId).remove();
 		}
 	}
 })
 
-const createGame = (state) => ({
-	createGame : () => {
+const loadCats = (state) => ({
+	loadCats : () => {
+		state.catsLoaded = true;
 		
-		var name = state.userName.replace(' ', '');
-		if(name in state.gamesList){
-			if(state.gamesList[name]){
-					console.log("game already made");
-					return;
-			}
-		}
-		state.self.getQuestions();
+		state.CategoriesRef.once("value", function(snap){
+			state.categoriesList = snap.val();
+		})
+		
+		state.CategoriesRef.on("child_added", function(snap){			
+			state.categoriesList[snap.key] = snap.val();
+		})
 	}
 })
 
+
+const createGame = (state) => ({
+	createGame : () => {
+		
+
+		var name = state.userName.replace(' ', '');
+		if(name in state.gamesList){
+			if(state.gamesList[name]){
+					state.self.snackbar("your game is still running");
+					return;
+			}
+		}
+		
+		if(!state.catsLoaded){
+			state.self.snackbar("ok pick your categories");
+			state.self.loadCats();
+			state.createGameDiv.show();
+			state.createGameBtn.hide();
+		}
+		
+//		state.self.getQuestions();
+	}
+})
+const pickGameCats = (state) => ({
+	pickGameCats : (cat) => {
+		var catTempHolder = {};	
+	
+		if(cat){
+			//TODO test this PLZ
+				catTempHolder.id = cat;
+			  catTempHolder.title = state.categoriesList[cat];
+				
+				state.catHolder.push(catTempHolder);
+			
+				state.self.appendCat(cat);
+			}
+		else{
+			var keys = Object.keys(state.categoriesList)
+    	keyId = keys[ keys.length * Math.random() << 0];
+			
+			catTempHolder.id = keyId;
+			catTempHolder.title = state.categoriesList[keyId];
+
+			state.catHolder.push(catTempHolder);
+			state.self.appendCat(state.categoriesList[keyId])
+		}
+			
+		if(state.catHolder.length >= state.maxCats){
+					//console.log("creating game now!", state.catHolder);
+					for(let i = 0; i < state.maxCats; i++){	
+
+							state.QuestionsRef.child(state.catHolder[i].id).once("value", function(snap){						
+							state.catHolder[i].clues = snap.val().clues; 				
+						}).then(function(){
+								if(i == state.maxCats - 1){
+									//console.log(state.catHolder);
+									state.self.getQuestions();
+								}
+						})					
+					}	
+		}
+				
+	}
+	
+})
+
+const appendCat = (state) => ({
+ appendCat : (title)=>{
+	 
+	  var catDiv = $("<li>", {
+			text: title,
+			class: "titleBlock"
+		})
+		
+		state.createGameDiv.append(catDiv);
+ }	
+})
+
 const getQuestions = (state) => ({
-	getQuestions : () => {	
+	getQuestions : () => {			
 		
-		console.log("created Game Room");
-		
-		
+		state.self.snackbar("creating your game");
+		state.createGameDiv.hide();
 		var myData = {count: 1, offset:0};
-//		$.ajax({
-//			 
-//			url: 'http://www.jservice.io/api/random',
-//			//data: myData,
-//			type: 'GET',		
-//			dataType: 'json',
-//			//crossDomain: true,
-//			success: function(data) { 
-//				alert(data); 
-//			},
-//			error: function() { alert('Failed!'); },
-//
-//		});10044 text.replace(/\W+/g, " ")
-//		
-//		  $.getJSON("http://jservice.io/api/categories", myData, function(result){
-//				    console.log(result);
-//            $.each(result, function(i, field){
-//							console.log(i, field);
-//                $("#message").append(field.answer + " ");
-//            });
-//        });
-		
-//		  var perildyQ = "";
-//		  $.getJSON("http://jservice.io/api/category", {id: 10044}, function(result){
-//				    console.log(result, dummyData);
-//					
-//				    perildyQ = result;
-//
-//        });
-		
-		
-//		var xhttp;
-//		xhttp=new XMLHttpRequest();
-//		xhttp.onreadystatechange = function() {
-//			if (this.readyState == 4 && this.status == 200) {
-//				console.log(JSON.parse(this.responseText));
-//			}
-//	 	};
-//		xhttp.open("GET", "http://jservice.io/api/random/?count=1", true);
-//		xhttp.send();
-		
-		//gotten from param
+
 		var newData = {Category: {}};
 		Object.assign(newData, roomData.emptyRoom);	
 		console.log(newData);
+		
+		for(let i = 0; i < state.maxCats; i++){			
+			state.self.createGameJson(newData, state.catHolder[i].title, i + 1, state.catHolder[i].clues)
+		}
 	
-		state.self.createGameJson(newData, "Literacy", 1, dummyData);
-		state.self.createGameJson(newData, "Literacy", 2, dummyData);
+//		state.self.createGameJson(newData, "Literacy", 1, dummyData);
+//		state.self.createGameJson(newData, "Literacy", 2, dummyData);
 		
 		//object to update server data
 		var updateObj = {};
 		//tie to users name
-		updateObj[state.userName] = newData;
+		var gameName = state.userName.replace(' ', '');
+		updateObj[gameName] = newData;
 		
+		console.log(updateObj);
 		
 		state.GamesRef.update(updateObj);
+		
+		state.createGameDiv.hide();
 	//	state.self.createGameJson(newData, "Books N Stuff", 2, dummyData);
 		
 	}
@@ -229,19 +299,24 @@ const getQuestions = (state) => ({
 const createGameJson = (state) => ({
 	createGameJson : (catObj, catName, catCol, catData) => {		 
 		
-		var pointData = [1, 2, 3, 4, 5];		
+		var pointData = [1, 2, 3, 4, 5];	
+		
 		
 		var len = catData.length;
 		
-		var startInt = Math.floor((Math.random() * (len/5)) + 1);
-	 		
-		console.log(startInt);
+		var startInt = Math.floor((Math.random() * (len/5)) + 1);	 		
+		
 		
 		len = startInt * 5;
 		
 		catObj.Category['cat' + catCol] = {Name: catName};
 		
-		for(let i = len - 5, b = 0; i < len; i++, b++){			
+		for(let i = len - 5, b = 0; i < len; i++, b++){	
+			
+			if(!catData[i].hasOwnProperty("value")){
+				   catData[i].value = 400;
+			}
+			
 			catObj.Category['cat' + catCol]["c" + b] = {
 				Points: catData[i].value,
 				Clue: catData[i].question, 
@@ -255,7 +330,7 @@ const createGameJson = (state) => ({
 const deleteGame = (state) => ({
 	deleteGame : (e) => {
 		var gameName = e.attr("datakey");
-		console.log('delete', gameName);
+		state.self.snackbar('you just deleted ', gameName);
 		state.GamesRef.child(gameName).remove();
 	}
 });
@@ -274,8 +349,6 @@ const saveImageMessage = (state) => ({
 			console.log(jsono);
     };
     reader.readAsText(file);
-		
-		
 				
 	//var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reader.result));
 //	var dlAnchorElem = document.getElementById('downloadAnchorElem');
@@ -290,24 +363,22 @@ const saveImageMessage = (state) => ({
 //						$("#message").text(http.responseText.replace(/\n/g, '<br>'));
 //				};
 //				http.send();
-		
-
-		
+	
 	}
 		
 })
 
 const testMode = (state) => ({
 	testMode : (buglog) => {
-		console.log(state.gamesList);
+		state.self.snackbar("don't click this again thanks");
 	}
 });
 
-const bugo = (state) => ({
-	bugo : (buglog) => {
-		console.log(buglog);
-	}
-});
+const curryMaster = (state) => ({
+	curryMaster : () =>{
+		
+	}	
+})
 
 $(document).ready(function(){
 	window.theLobby = Lobby();

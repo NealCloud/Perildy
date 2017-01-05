@@ -3,13 +3,14 @@ const Lobby = (self) =>{
     //element holders			
 			signInBtn : $("#signIn"),
 			signOutBtn : $("#signOut"),		
-			testBtn: $("#testBtn"),			
+			testBtn: $("#testBtn"),
+			createCatBtn: $("#createCat"),
 			//client info vars		
-			refList : ["Files", "Games"],
+			refList : ["Categories", "Questions"],
 			notRendered : true,	
 			gamesList: {},
 			//Server info vars	
-									
+			categoriesList: {},			
 			//must be initialized
 			init: (self) => {
 				//to give access to composition methods
@@ -31,23 +32,17 @@ const Lobby = (self) =>{
 				state.self.signOut();
 		})
 		
-			state.mainDisplay.on("click", ".deleteGame", function(e){
-				console.log("wat the heck");
-				state.self.deleteGame($(this));
-		})
+	
 			
-			state.createGameBtn.on("click", function(e){				
-				state.self.createGame();
+			state.createCatBtn.on("click", function(e){				
+				state.self.createCategory();
 		})
 			
 			state.testBtn.on("click", function(e){
 				state.self.testMode();
 		})
 		
-		state.fileLoader.on("change", function(e){
-			console.log("chango");
-			state.self.saveImageMessage(e);
-		})
+	
 	  
 		
 		//return the final object with all its composition methods attached
@@ -62,11 +57,11 @@ const Lobby = (self) =>{
 			fireStuff.createRefs(state),
 			//game state methods
 			onSignIn(state),
-			onSignOut(state),
-			loadGame(state),				
+			onSignOut(state),					
 			getQuestions(state),
 			createGameJson(state),			
-			createGame(state),
+			createCategory(state),
+			loadCats(state),
 			//utility methods
 			testMode(state),
 			bugo(state)
@@ -97,34 +92,77 @@ const onSignIn = (state) => ({
 		if(state.notRendered){
 				state.self.createRefs(state.refList, "");
 			  state.notRendered = false;
-				//state.self.loadGame();
+				state.self.loadCats();
 		}							
 	}
 });
 
-
-const createGame = (state) => ({
-	createGame : () => {
+const loadCats = (state) => ({
+	loadCats : () => {
+		state.CategoriesRef.once("value", function(snap){
+			state.categoriesList = snap.val();
+		})
 		
-		var name = state.userName.replace(' ', '');
-		if(name in state.gamesList){
-			if(state.gamesList[name]){
-					console.log("game already made");
+		state.CategoriesRef.on("child_added", function(snap){			
+			state.categoriesList[snap.key] = snap.val();
+		})
+	}
+})
+
+
+const createCategory = (state) => ({
+	createCategory : () => {
+		var newCat = 1;		
+			 
+		$.getJSON({			 
+			url: 'http://www.jservice.io/api/random',
+			data: {count: 1},		
+			success: function(data) { 
+				console.log(data);
+				newCat = data[0].category_id;
+				
+				if("c" + newCat in state.categoriesList){
+					console.log("id already filled used!");
 					return;
-			}
-		}
-		state.self.getQuestions();
+				}
+				else{
+					console.log("creating!", newCat);
+					state.self.getQuestions(newCat);
+				}
+			},
+			error: function() { console.log('Failed!'); },
+		});
+		
+		
 	}
 })
 
 const getQuestions = (state) => ({
-	getQuestions : () => {	
+	getQuestions : (catNum) => {		
 		
-		console.log("created Game Room");
+		var perildyCat = "";	
+		var catListUpdate = {};
+		var qUpdate = {};
+			$.getJSON({			 
+				url: 'http://www.jservice.io/api/category',
+				data: {id: catNum},				
+				success: function(catData) { 
+					console.log(catData);		
+						
+					catListUpdate["c" + catNum] = catData.title;
 		
+					state.CategoriesRef.update(catListUpdate);
+					
+					qUpdate["c" + catNum] = { clues:catData.clues };
+					
+					state.QuestionsRef.update(qUpdate);
+				},
+				error: function() { console.log('Failed!'); }
+			
+		})			
+	
 		
-		var myData = {count: 1, offset:0};
-//		$.ajax({
+		//		$.ajax({
 //			 
 //			url: 'http://www.jservice.io/api/random',
 //			//data: myData,
@@ -147,35 +185,33 @@ const getQuestions = (state) => ({
 //        });
 		
 //		  var perildyQ = "";
-//		  $.getJSON("http://jservice.io/api/category", {id: 10044}, function(result){
-//				    console.log(result, dummyData);
-//					
-//				    perildyQ = result;
-//
+//		  $.getJSON("http://www.jservice.io/api/category", {id: catNum}, function(result){
+//				    console.log(result, dummyData);					
+//				    perildyCat = result;
 //        });
+//		var xhttp;
+//		xhttp=new XMLHttpRequest();
+//		xhttp.onreadystatechange = function() {
+//			if (this.readyState == 4 && this.status == 200) {
+//				console.log(JSON.parse(this.responseText));
+//			}
+//	 	};
+//		xhttp.open("GET", "http://jservice.io/api/random/?count=1", true);
+//		xhttp.send();
 		
 		
-		var xhttp;
-		xhttp=new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				console.log(JSON.parse(this.responseText));
-			}
-	 	};
-		xhttp.open("GET", "http://jservice.io/api/random/?count=1", true);
-		xhttp.send();
 		
 		//gotten from param
-		var newData = {Category: {}};
-		Object.assign(newData, roomData.emptyRoom);	
-		console.log(newData);
-	
-		state.self.createGameJson(newData, "Literacy", 1, dummyData);
-		var updateObj = {};
-		updateObj[state.userName] = newData;
+//		var newData = {Category: {}};
+//		Object.assign(newData, roomData.emptyRoom);	
+//		console.log(newData);
+//	
+//		state.self.createGameJson(newData, "Literacy", 1, dummyData);
+//		var updateObj = {};
+//		updateObj[state.userName] = newData;
 		
 		
-		state.GamesRef.update(updateObj);
+//		state.GamesRef.update(updateObj);
 	//	state.self.createGameJson(newData, "Books N Stuff", 2, dummyData);
 		
 	}
@@ -247,7 +283,7 @@ const saveImageMessage = (state) => ({
 
 const testMode = (state) => ({
 	testMode : (buglog) => {
-		console.log(state.gamesList);
+		console.log(state.categoriesList);
 	}
 });
 

@@ -28,7 +28,7 @@ var fireStuff = {};
 
 		 onAuthStateChanged : (state) => ({
 			 onAuthStateChanged : (user, callin, callout) => {			
-					console.log("Auth has changed!");
+					//console.log("Auth has changed!");
 					if(user){
 						callin();					
 					}					

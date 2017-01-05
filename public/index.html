@@ -3,72 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Welcome to Perildy</title>
-    <style media="screen">
-      body {
-        font-family: Roboto, Arial, sans-serif;
-        background: #ECEFF1;
-        color: rgba(0,0,0,0.87);
-      }
-
-      a {
-        color: white;
-				text-decoration: none;
-      }
-
-      #mainDisplay {
-        max-width: 400px;
-        margin: 40px auto;
-        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2),0 1px 1px 0 rgba(0,0,0,0.14),0 2px 1px -1px rgba(0,0,0,0.12);
-        border-radius: 2px;
-        background: white;
-        padding: 16px 24px;
-      }
-
-      #mainDisplay h1 {
-        font-size: 22px;
-        font-weight: 500;
-        text-align: center;
-        margin: 0 0 16px;
-      }
-
-      #mainDisplay p {
-        font-weight: 300;
-        line-height: 150%;
-      }
-
-      #mainDisplay ul {
-        list-style: none;
-        margin: 16px 0 0;
-        padding: 0;
-        text-align: center;
-      }
-
-      #mainDisplay li{        
-        padding: 8px;
-        text-transform: uppercase;
-        
-        font-weight: 500;
-        background: rgb(3,155,229);
-        color: white;
-        border: 1px solid rgb(3,155,229);
-        border-radius: 3px;
-        font-size: 14px;
-        box-shadow: 0 2px 5px 0 rgba(0,0,0,.26);
-				margin: 5px 0;
-      }
-			.gameItem{
-			 display: flex;
-			 text-decoration: none;
-			 justify-content: space-around;
-			}
-			.deleteGame{
-				border: 1px solid red;
-				border-radius: 2px;
-				background-color: red;
-			}
-				
-						
-    </style>
+    <link href="style/main.css" rel="stylesheet">
   </head>
   <body>
     <div id="mainDisplay">
@@ -78,6 +13,13 @@
        
       </ul>
      </div>
+		
+		<div id="gameCreate">
+      <h1>Hello</h1>
+     <button id="randomCatBtn">
+			Add random category
+		</button>
+		</div>
 		
 		<button id="signIn">
 			Sign In!
@@ -100,7 +42,7 @@
           </form>
 -->
 <!--		<a id='downloadAnchorElem'>downloadJson</a>		-->
-		
+		<div id="snackbar"></div>
 <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 <script>
   // Initialize Firebase
@@ -116,6 +58,7 @@
 		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 		<script src="scripts/roomData.js"></script>
+		<script src="scripts/pageUtils.js"></script>
 		<script src="scripts/firebaseUtils.js"></script>
 		<script src="scripts/lobby.js"></script>
 		

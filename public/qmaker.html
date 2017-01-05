@@ -19,7 +19,7 @@
         color: rgb(3,155,229);
       }
 
-      #message {       
+      #message, #gameCreate {       
 				height: 450px;
         position: relative;
         box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2),0 1px 1px 0 rgba(0,0,0,0.14),0 2px 1px -1px rgba(0,0,0,0.12);
@@ -28,7 +28,7 @@
         padding: 16px 24px;
       }
 
-      #message h1 {
+      #message h1, #gameCreate {
         font-size: 22px;
         font-weight: 500;
         text-align: center;
@@ -113,7 +113,13 @@
       
      
 		</div>
-	
+		
+	  <button id="createCat" class="gameBtn">
+					Create Cat
+				</button>
+		  <button id="testBtn" class="gameBtn">
+					test
+				</button>
 		<script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 <script>
   // Initialize Firebase

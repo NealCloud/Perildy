@@ -715,22 +715,33 @@ const buzzGame = (state) => ({
 		 //make sure they havn't buzzed and its the question Phase and temp seat open
 		if(state.notAnswered && state.gameInfo.QuestionPhase && !state.gameInfo.TempSeat && state.playerSlot){
 			//flag buzzed and fill temp seat
-			state.notAnswered = false;
-			state.buzzerBtn.hide();	
-			state.GameRef.update({TempSeat:state.playerSlot});
+			
+			state.GameRef.update(
+				{TempSeat:state.playerSlot}
+			)
+				.then(function(){
+				
+					state.notAnswered = false;
+					state.buzzerBtn.hide();	
+				
+					var startTime = 5;
+					state.TimersRef.child("Answer").update({
+							 Time: startTime,
+							 Started: true						
+						 })
+					//start Interval for the Temp Seat host
+					state.answerTimer = setInterval(function(){
+						startTime -= 1;
+						state.TimersRef.child("Answer").update({				 
+							 Time: startTime
+						 })		
+					}, 1000)
+			})
+				.catch(function(){
+				 	state.self.snackbar("you got beaten to it!");
+			})
 			//start timer to 5 seconds and trigger Firebase		
-			var startTime = 5;
-			state.TimersRef.child("Answer").update({
-					 Time: startTime,
-					 Started: true						
-				 })
-			//start Interval for the Temp Seat host
-			state.answerTimer = setInterval(function(){
-				startTime -= 1;
-				state.TimersRef.child("Answer").update({				 
-					 Time: startTime
-				 })		
-			}, 1000)
+		
 		}
 		//TODO erase after working no cheating
 		else{

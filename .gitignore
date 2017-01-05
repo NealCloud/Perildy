@@ -1,4 +1,5 @@
 .firebaserc
-.database.rule.json
+.database.rules.json
 .firebase-debug.log
+.fakerules.json
 

@@ -1,0 +1,84 @@
+{ "root.child('Games/' + $gameName + '/Game/Tempseat').val() == false || auth.uid == root.child('Game/' + $gameName + '/Players/PlayerInfo/' + (root.child('Games/' + $gameName + '/Game/Tempseat').val()) + '/uid').val()"
+    "rules": {
+      "address":{
+        ".read": true       
+      },
+      "students":{
+        ".read": "auth !=null",
+        ".write": "auth !=null && auth.provider != 'anonymous'"
+      },
+      "room": {
+        ".read": "auth !=null && auth.provider != 'anonymous'",
+        ".write":"auth !=null"
+      },
+      "interview":{
+        ".read": true,
+        ".write": true
+      },
+      "brackets":{       
+          "$uid": {
+          ".read": "auth != null && auth.uid == $uid",
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      },
+      
+      "cloudBlog":{
+         "posts":{ 
+            ".read" : true,
+             "$postids":{  
+              ".write": "!data.exists() || data.child('author').val() == auth.uid"
+              }
+                
+            },
+          "bots":{
+            "$keys":{
+              ".read": true,
+              ".write": true
+            }
+          },
+            "tags":{            
+              ".read": true,
+              ".write": true            
+          },
+          
+          "projects":{ 
+           ".read" : true,
+             "$projectids":{          
+                  ".write": "root.child('billybob/' + auth.uid).val() == true || data.child('author').val() == auth.uid || root.child('cloudBlog/projects/' + $projectids + '/collaborators/' + auth.uid).val() == true || !data.exists()" ,   
+                  "posts":{
+                      "$postid":{
+                        ".write": "root.child('billybob/' + auth.uid).val() == true || root.child('cloudBlog/projects/' + $projectids + '/author').val() == auth.uid || root.child('cloudBlog/projects/' + $projectids + '/collaborators/' + auth.uid).val() == true "
+                      }
+                  },
+                      "hours":{
+                        ".write": true
+                  }
+             }         
+          },
+          
+          "projectName":{
+             ".read": true,
+            "$projectid":{
+              
+            ".write": "!data.exists()"
+            }           
+          },
+          "users":{
+             ".read": true,
+            "$uid":{              
+                ".write": "auth != null && auth.uid == $uid || !data.exists()"
+            }
+           
+          }
+      },       
+      
+       "cloudFire":{
+            ".read": true,
+            ".write": true
+      },
+       "chat":{
+       ".read": true,
+       ".write": true
+      }
+    }
+}

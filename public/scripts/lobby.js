@@ -23,12 +23,15 @@ const Lobby = (self) =>{
 			categoriesList: {},
 			maxCats: 2,
 			catHolder: [],
+			testholder: null,
 			//Server info vars	
 									
 			//must be initialized
 			init: (self) => {
 				//to give access to composition methods
 				state.self = self;
+				//w3 stuff
+				//w3DisplayData("mainbody", {"number" : state.maxCats});
 				//firebase starting
 				state.self.initFirebase( state.self.onSignIn, state.self.onSignOut)				  
 					.then(() => console.log('firebase started'))

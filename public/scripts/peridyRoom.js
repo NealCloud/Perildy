@@ -349,9 +349,9 @@ const updateGameInfo = (state) => ({
 				case "PickPhase":
 					state.gameInfo.PickPhase = serverInfo;
 					if(state.gameInfo.HotSeat){
-						state.trebekChat.text("TerbekBot: " + state.playerinfo[state.gameInfo.HotSeat].name + "Please choose a Category");
+						
 					}
-					state.trebekChat.text("TerbekBot: Someone join the Game! and pick a category");
+					
 					break;
 				case "HotSeat":
 					state.gameInfo.HotSeat = serverInfo;
@@ -376,7 +376,8 @@ const updateGameInfo = (state) => ({
 						state.questionBoard.removeClass("zoom");						
 //						state.self.updateCurrentQuestion(state.gameInfo.QuestionPhase);
 						state.questionBoardText.text(state.gameInfo.currentQuestion);
-						state.buzzerBtn.show();				
+						state.buzzerBtn.show();
+						state.trebekChat.text("good choice");
 					}					
 					
 					else if(state.gameInfo.Started) {
@@ -555,8 +556,6 @@ const updateCurrentQuestion = (state) => ({
 		
 		//state.self.updateGameBoard(id);
 	
-		
-	
 	}
 	
 })
@@ -565,9 +564,7 @@ const endQuestionPhase = (state) => ({
 	endQuestionPhase : () => {
 		 if(state.gameInfo.currentAnswer){
 			 state.trebekChat.text("TrebekBot: The answer was " + state.gameInfo.currentAnswer);
-			 setTimeout(function(){
-				 state.trebekChat.text("TrebekBot: Please pick a peril");	
-			 }, 4000)			 
+					 
 		 }
 		 
 		 //console.log("qtimer end for " + state.gameInfo.HotSeat);
@@ -738,14 +735,14 @@ const buzzGame = (state) => ({
 					}, 1000)
 			})
 				.catch(function(){
-				 	state.self.snackbar("you got beaten to it!");
+				 	state.self.snackbar("you barely got beaten to it!");
 			})
 			//start timer to 5 seconds and trigger Firebase		
 		
 		}
 		//TODO erase after working no cheating
 		else{
-			state.self.snackbar("Someone else buzzed in!");
+			state.self.snackbar("Someone else is buzzed in!");
 			console.log("no buzz allowed", state.gameInfo.currentAnswer, state.gameInfo.currentQuestion);
 		}		
 	}

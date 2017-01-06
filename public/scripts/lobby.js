@@ -359,7 +359,7 @@ const getQuestions = (state) => ({
 		//object to update server data
 		var updateObj = {};
 		//tie to users name
-		var gameName = state.userName.replace(' ', '');
+		var gameName = state.userName.replace( /\W/g , '');
 		updateObj[gameName] = newData;
 		
 		console.log(updateObj);

@@ -1,5 +1,6 @@
-firebaserc
+.firebaserc
 database.rules.json
 firebase-debug.log
 fakerules.json
 firebase.json
+questionFiles.json
